@@ -1,0 +1,25 @@
+{
+    "env": {
+        "myDefaulIncludePath": [
+            "${workspaceFolder}/",
+            "${workspaceFolder}/framework/"
+        ]
+    },
+    "configurations": [
+        {
+            "includePath": [
+                "${workspaceFolder}",
+                "${workspaceFolder}/framework",
+                "${workspaceFolder}/framework/libs",
+                "${workspaceFolder}/framework/libs/ImGui",
+                "${workspaceFolder}/framework/libs/ImGui/backends"
+            ],
+            "name": "Vulkan framework",
+            "cppStandard": "c++20",
+            "intelliSenseMode": "linux-gcc-x64",
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "c17"
+        }
+    ],
+    "version": 4
+}

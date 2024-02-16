@@ -541,8 +541,9 @@ namespace framework
         initInfo.MinImageCount = lDevice->getPhysicalDevice()->getSwapChainSupportDetails().capabilities.minImageCount;
         initInfo.ImageCount = swapChain->getImages().size();
         initInfo.CheckVkResultFn = nullptr;
+        initInfo.RenderPass = renderPass->getRenderPass();
 
-        ImGui_ImplVulkan_Init(&initInfo, renderPass->getRenderPass());
+        ImGui_ImplVulkan_Init(&initInfo);
 
         // Active ImGui During the draw call
         imGuiActive = true;

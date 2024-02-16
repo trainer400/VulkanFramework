@@ -1,0 +1,6 @@
+[submodule "framework/libs/ImGui"]
+	path = framework/libs/ImGui
+	url = https://github.com/ocornut/imgui.git
+[submodule "framework/libs/ImPlot"]
+	path = framework/libs/ImPlot
+	url = https://github.com/epezent/implot.git

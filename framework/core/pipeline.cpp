@@ -147,7 +147,7 @@ namespace framework
         layoutInfo.pushConstantRangeCount = 0;
         layoutInfo.pPushConstantRanges = nullptr;
 
-        if (collection->getDescriptorSet() != VK_NULL_HANDLE)
+        if (collection->hasDescriptorSet())
         {
             layoutInfo.setLayoutCount = 1;
             layoutInfo.pSetLayouts = &collection->getDescriptorSetLayout();

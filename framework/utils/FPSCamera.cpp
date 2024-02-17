@@ -1,12 +1,7 @@
 #include "FPSCamera.h"
-
 #include <stdexcept>
 
-#include <iostream>
-
-using namespace framework;
-
-namespace RocketFlightVisualizer
+namespace framework
 {
     FPSCamera::FPSCamera(float velocity, int fovY, float nearPlane, float farPlane, FPSCameraKeyBindings bindings)
         : camera(fovY, nearPlane, farPlane), bindings(bindings),

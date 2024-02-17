@@ -25,6 +25,7 @@ set(FRAMEWORK_UTILS
     utils/camera.cpp
     utils/constantVelocityCounter.cpp
     utils/objectParser.cpp
+    utils/FPSCamera.cpp
 )
 
 set(FRAMEWORK_WINDOW

@@ -1,12 +1,12 @@
 #pragma once
 
-#include <libs/framework/utils/camera.h>
-#include <libs/framework/utils/constantVelocityCounter.h>
-#include <libs/framework/window/window.h>
+#include <utils/camera.h>
+#include <utils/constantVelocityCounter.h>
+#include <window/window.h>
 
 #include <memory>
 
-namespace RocketFlightVisualizer
+namespace framework
 {
     struct FPSCameraKeyBindings
     {

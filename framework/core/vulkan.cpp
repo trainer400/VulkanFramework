@@ -553,17 +553,12 @@ namespace framework
     void Vulkan::manageResize(const std::shared_ptr<Window> &window)
     {
         // Wait that the device is ready
-        waitIdle();
+        lDevice->waitIdle();
 
         // Recreate swapchain and frame buffers
         swapChain->recreateSwapChain(window, surface->getSurface());
         renderPass->recreateRenderPass(swapChain->getExtent(), swapChain->getFormat());
         frameBufferCollection->recreateFrameBuffer(swapChain->getImageViews(), swapChain->getExtent(),
                                                    renderPass->getDepthTestType(), renderPass->getDepthImageView(), renderPass->getRenderPass());
-    }
-
-    void Vulkan::waitIdle()
-    {
-        vkDeviceWaitIdle(lDevice->getDevice());
     }
 }

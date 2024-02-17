@@ -29,7 +29,12 @@ namespace framework
          */
         QueueFamilyIndices findQueueFamilies(const VkSurfaceKHR &surface);
 
-        // Gettes
+        /**
+         * @brief Waits for the device to be idle
+         */
+        inline void waitIdle() { vkDeviceWaitIdle(device); }
+
+        // Getters
         inline const VkDevice &getDevice() { return device; }
         inline const VkQueue &getGraphicsQueue() { return graphicsQueue; }
         inline const VkQueue &getPresentQueue() { return presentQueue; }

@@ -113,11 +113,6 @@ namespace framework
         void manageResize(const std::shared_ptr<Window> &window);
 
         /**
-         * @brief Waits for the device to be idle
-         */
-        void waitIdle();
-
-        /**
          * @brief Get the Instance object
          */
         const VkInstance &getInstance() { return instance; }

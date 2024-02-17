@@ -1,6 +1,6 @@
 # Compile the shaders
-# glslc shaders/visualizer.vert -o shaders/vert.spv
-# glslc shaders/visualizer.frag -o shaders/frag.spv
+glslc examples/cube/shaders/cube.vert -o examples/cube/shaders/vert.spv
+glslc examples/cube/shaders/cube.frag -o examples/cube/shaders/frag.spv
 
 # Create the build directory where to put all the cmake stuff
 mkdir build

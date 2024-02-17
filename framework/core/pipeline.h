@@ -44,6 +44,7 @@ namespace framework
         uint32_t getIndexSize() { return collection->getIndexSize(); }
         uint32_t getNumberOfInstances() { return collection->getNumberOfInstances(); }
         bool isVisible() { return visible; }
+        bool hasDescriptorSet() { return collection->hasDescriptorSet(); }
 
         // Setters
         void setVisibility(bool v) { visible = v; }

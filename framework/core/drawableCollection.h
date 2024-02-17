@@ -72,6 +72,7 @@ namespace framework
         inline const VkDescriptorPool &getDescriptorPool() { return descriptorSet->getDescriptorPool(); }
         inline const VkDescriptorSet &getDescriptorSet() { return descriptorSet->getDescriptorSet(); }
         inline const VkDescriptorSetLayout &getDescriptorSetLayout() { return descriptorSet->getDescriptorSetLayout(); }
+        inline bool hasDescriptorSet() { return descriptorSet != nullptr; }
 
         // Setters
         void setNumberOfInstances(uint32_t instances) { numberInstances = instances; }

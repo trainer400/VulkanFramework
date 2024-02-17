@@ -298,7 +298,7 @@ namespace framework
                 vkCmdBindIndexBuffer(commandBuffer->getCommandBuffer(), pipeline->getIndexBuffer(), 0, VK_INDEX_TYPE_UINT32);
 
                 // Bind the Uniform buffer and texture
-                if (pipeline->getDescriptorSet() != nullptr)
+                if (pipeline->hasDescriptorSet())
                 {
                     vkCmdBindDescriptorSets(commandBuffer->getCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->getLayout(), 0, 1, &pipeline->getDescriptorSet(), 0, nullptr);
                 }

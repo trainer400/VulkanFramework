@@ -1,8 +1,11 @@
 #include <stdio.h>
 #include <iostream>
+#include <chrono>
+#include <libs/glm/glm.hpp>
+#include <libs/glm/gtc/matrix_transform.hpp>
 #include <framework/core/vulkan.h>
 #include <framework/window/window.h>
-#include <framework/utils/FPSCamera.h>
+#include <framework/utils/camera.h>
 #include <framework/core/uniformBuffer.h>
 
 using namespace std;
@@ -17,7 +20,7 @@ shared_ptr<Pipeline> cubePipeline;
 unique_ptr<SwapChain> swapChain;
 unique_ptr<RenderPass> renderPass;
 unique_ptr<FrameBufferCollection> frameBufferCollection;
-FPSCamera camera{1, 45, 0.1f, 100.0f, {}};
+Camera camera{45, 0.1f, 100.0f};
 
 struct GlobalUniformBuffer
 {
@@ -36,12 +39,53 @@ public:
     {
         // clang-format off
         
-        vertices.insert(vertices.end(), {-1, -1, 0, 0, 1, 0});
-        vertices.insert(vertices.end(), {1, -1, 0, 1, 0, 0});
-        vertices.insert(vertices.end(), {-1, 1, 0, 0, 0, 1});
-        vertices.insert(vertices.end(), {1, 1, 0, 0, 1, 0});
+        // Back
+        vertices.insert(vertices.end(), {-1.0, -1.0, -1.0, 1.0f, 0.0f, 0.0f});
+        vertices.insert(vertices.end(), {1.0, -1.0, -1.0, 1.0f, 0.0f, 0.0f});
+        vertices.insert(vertices.end(), {-1.0, 1.0, -1.0, 1.0f, 0.0f, 0.0f});
+        vertices.insert(vertices.end(), {1.0, 1.0, -1.0, 1.0f, 0.0f, 0.0f});
+        indices.push_back(2); indices.push_back(1); indices.push_back(0); // First triangle
+        indices.push_back(1); indices.push_back(2); indices.push_back(3); // Second triangle
 
-        indices.insert(indices.end(), {0, 1, 2, 3, 2, 1});
+        // Left
+        vertices.insert(vertices.end(), {-1.0, -1.0, -1.0, 0.0f, 1.0f, 0.0f});
+        vertices.insert(vertices.end(), {-1.0, -1.0, 1.0, 0.0f, 1.0f, 0.0f});
+        vertices.insert(vertices.end(), {-1.0, 1.0, -1.0, 0.0f, 1.0f, 0.0f});
+        vertices.insert(vertices.end(), {-1.0, 1.0, 1.0, 0.0f, 1.0f, 0.0f});
+        indices.push_back(0 + 4); indices.push_back(1 + 4); indices.push_back(2 + 4); // First triangle
+        indices.push_back(3 + 4); indices.push_back(2 + 4); indices.push_back(1 + 4); // Second triangle
+
+        // // Right
+        // vertices.insert(vertices.end(), {1.0, -1.0, -1.0, 0.0f, 1.0f, 0.0f});
+        // vertices.insert(vertices.end(), {1.0, -1.0, 1.0, 0.0f, 1.0f, 0.0f});
+        // vertices.insert(vertices.end(), {1.0, 1.0, -1.0, 0.0f, 1.0f, 0.0f});
+        // vertices.insert(vertices.end(), {1.0, 1.0, 1.0, 0.0f, 1.0f, 0.0f});
+        // indices.push_back(0 + 8); indices.push_back(1 + 8); indices.push_back(2 + 8); // First triangle
+        // indices.push_back(1 + 8); indices.push_back(2 + 8); indices.push_back(3 + 8); // Second triangle
+
+        // // Top
+        // vertices.insert(vertices.end(), {-1.0, 1.0, -1.0, 0.0f, 0.0f, 1.0f});
+        // vertices.insert(vertices.end(), {1.0, 1.0, -1.0, 0.0f, 0.0f, 1.0f});
+        // vertices.insert(vertices.end(), {-1.0, 1.0, 1.0, 0.0f, 0.0f, 1.0f});
+        // vertices.insert(vertices.end(), {1.0, 1.0, 1.0, 0.0f, 0.0f, 1.0f});
+        // indices.push_back(0 + 12); indices.push_back(1 + 12); indices.push_back(2 + 12); // First triangle
+        // indices.push_back(1 + 12); indices.push_back(2 + 12); indices.push_back(3 + 12); // Second triangle
+
+        // // Bottom
+        // vertices.insert(vertices.end(), {-1.0, -1.0, -1.0, 0.0f, 0.0f, 1.0f});
+        // vertices.insert(vertices.end(), {1.0, -1.0, -1.0, 0.0f, 0.0f, 1.0f});
+        // vertices.insert(vertices.end(), {-1.0, -1.0, 1.0, 0.0f, 0.0f, 1.0f});
+        // vertices.insert(vertices.end(), {1.0, -1.0, 1.0, 0.0f, 0.0f, 1.0f});
+        // indices.push_back(0 + 16); indices.push_back(1 + 16); indices.push_back(2 + 16); // First triangle
+        // indices.push_back(1 + 16); indices.push_back(2 + 16); indices.push_back(3 + 16); // Second triangle
+        
+        // // Front
+        // vertices.insert(vertices.end(), {-1.0, -1.0, 1.0, 1.0f, 0.0f, 0.0f});
+        // vertices.insert(vertices.end(), {1.0, -1.0, 1.0, 1.0f, 0.0f, 0.0f});
+        // vertices.insert(vertices.end(), {-1.0, 1.0, 1.0, 1.0f, 0.0f, 0.0f});
+        // vertices.insert(vertices.end(), {1.0, 1.0, 1.0, 1.0f, 0.0f, 0.0f});
+        // indices.push_back(0 + 20); indices.push_back(1 + 20); indices.push_back(2 + 20); // First triangle
+        // indices.push_back(1 + 20); indices.push_back(2 + 20); indices.push_back(3 + 20); // Second triangle
 
         // clang-format on
     }
@@ -92,9 +136,14 @@ void updateUniformBuffer()
 {
     GlobalUniformBuffer buf{};
 
+    // Make a rotation of the cube
+    static auto startTime = std::chrono::high_resolution_clock::now();
+    auto currentTime = std::chrono::high_resolution_clock::now();
+    float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+
     // Set the gubo depending on the camera
+    buf.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.f), glm::vec3(0, 1, 0));
     buf.view = camera.getLookAtMatrix();
-    buf.model = glm::mat4(1.0f);
     buf.projection = camera.getPerspectiveMatrix(window->getWidth(), window->getHeight());
 
     // Copy the gubo in memory
@@ -103,12 +152,7 @@ void updateUniformBuffer()
 
 void onUpdate()
 {
-    camera.updatePosition();
     updateUniformBuffer();
-
-    // Set the cursor in position
-    glfwSetInputMode(window->getWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    glfwSetCursorPos(window->getWindow(), window->getWidth() / 2, window->getHeight() / 2);
 
     // Draw the frame
     vulkan->draw({0.0f, 0.0f, 0.0f, 1.0f});
@@ -162,8 +206,9 @@ int main()
     // Create imgui
     vulkan->setupImGui(window->getWindow(), [&]() {});
 
-    // Set the camera bindings
-    camera.registerCallbacks(window);
+    // Set camera position
+    camera.setPosition({0, 2.0f, -10.0f});
+    camera.lookAt({0, 0, 0});
 
     // Run the window
     window->run([=]()

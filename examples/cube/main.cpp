@@ -55,37 +55,37 @@ public:
         indices.push_back(0 + 4); indices.push_back(1 + 4); indices.push_back(2 + 4); // First triangle
         indices.push_back(3 + 4); indices.push_back(2 + 4); indices.push_back(1 + 4); // Second triangle
 
-        // // Right
-        // vertices.insert(vertices.end(), {1.0, -1.0, -1.0, 0.0f, 1.0f, 0.0f});
-        // vertices.insert(vertices.end(), {1.0, -1.0, 1.0, 0.0f, 1.0f, 0.0f});
-        // vertices.insert(vertices.end(), {1.0, 1.0, -1.0, 0.0f, 1.0f, 0.0f});
-        // vertices.insert(vertices.end(), {1.0, 1.0, 1.0, 0.0f, 1.0f, 0.0f});
-        // indices.push_back(0 + 8); indices.push_back(1 + 8); indices.push_back(2 + 8); // First triangle
-        // indices.push_back(1 + 8); indices.push_back(2 + 8); indices.push_back(3 + 8); // Second triangle
+        // Right
+        vertices.insert(vertices.end(), {1.0, -1.0, -1.0, 0.0f, 1.0f, 0.0f});
+        vertices.insert(vertices.end(), {1.0, -1.0, 1.0, 0.0f, 1.0f, 0.0f});
+        vertices.insert(vertices.end(), {1.0, 1.0, -1.0, 0.0f, 1.0f, 0.0f});
+        vertices.insert(vertices.end(), {1.0, 1.0, 1.0, 0.0f, 1.0f, 0.0f});
+        indices.push_back(2 + 8); indices.push_back(1 + 8); indices.push_back(0 + 8); // First triangle
+        indices.push_back(1 + 8); indices.push_back(2 + 8); indices.push_back(3 + 8); // Second triangle
 
-        // // Top
-        // vertices.insert(vertices.end(), {-1.0, 1.0, -1.0, 0.0f, 0.0f, 1.0f});
-        // vertices.insert(vertices.end(), {1.0, 1.0, -1.0, 0.0f, 0.0f, 1.0f});
-        // vertices.insert(vertices.end(), {-1.0, 1.0, 1.0, 0.0f, 0.0f, 1.0f});
-        // vertices.insert(vertices.end(), {1.0, 1.0, 1.0, 0.0f, 0.0f, 1.0f});
-        // indices.push_back(0 + 12); indices.push_back(1 + 12); indices.push_back(2 + 12); // First triangle
-        // indices.push_back(1 + 12); indices.push_back(2 + 12); indices.push_back(3 + 12); // Second triangle
+        // Top
+        vertices.insert(vertices.end(), {-1.0, 1.0, -1.0, 0.0f, 0.0f, 1.0f});
+        vertices.insert(vertices.end(), {1.0, 1.0, -1.0, 0.0f, 0.0f, 1.0f});
+        vertices.insert(vertices.end(), {-1.0, 1.0, 1.0, 0.0f, 0.0f, 1.0f});
+        vertices.insert(vertices.end(), {1.0, 1.0, 1.0, 0.0f, 0.0f, 1.0f});
+        indices.push_back(2 + 12); indices.push_back(1 + 12); indices.push_back(0 + 12); // First triangle
+        indices.push_back(1 + 12); indices.push_back(2 + 12); indices.push_back(3 + 12); // Second triangle
 
-        // // Bottom
-        // vertices.insert(vertices.end(), {-1.0, -1.0, -1.0, 0.0f, 0.0f, 1.0f});
-        // vertices.insert(vertices.end(), {1.0, -1.0, -1.0, 0.0f, 0.0f, 1.0f});
-        // vertices.insert(vertices.end(), {-1.0, -1.0, 1.0, 0.0f, 0.0f, 1.0f});
-        // vertices.insert(vertices.end(), {1.0, -1.0, 1.0, 0.0f, 0.0f, 1.0f});
-        // indices.push_back(0 + 16); indices.push_back(1 + 16); indices.push_back(2 + 16); // First triangle
-        // indices.push_back(1 + 16); indices.push_back(2 + 16); indices.push_back(3 + 16); // Second triangle
+        // Bottom
+        vertices.insert(vertices.end(), {-1.0, -1.0, -1.0, 0.0f, 0.0f, 1.0f});
+        vertices.insert(vertices.end(), {1.0, -1.0, -1.0, 0.0f, 0.0f, 1.0f});
+        vertices.insert(vertices.end(), {-1.0, -1.0, 1.0, 0.0f, 0.0f, 1.0f});
+        vertices.insert(vertices.end(), {1.0, -1.0, 1.0, 0.0f, 0.0f, 1.0f});
+        indices.push_back(0 + 16); indices.push_back(1 + 16); indices.push_back(2 + 16); // First triangle
+        indices.push_back(3 + 16); indices.push_back(2 + 16); indices.push_back(1 + 16); // Second triangle
         
-        // // Front
-        // vertices.insert(vertices.end(), {-1.0, -1.0, 1.0, 1.0f, 0.0f, 0.0f});
-        // vertices.insert(vertices.end(), {1.0, -1.0, 1.0, 1.0f, 0.0f, 0.0f});
-        // vertices.insert(vertices.end(), {-1.0, 1.0, 1.0, 1.0f, 0.0f, 0.0f});
-        // vertices.insert(vertices.end(), {1.0, 1.0, 1.0, 1.0f, 0.0f, 0.0f});
-        // indices.push_back(0 + 20); indices.push_back(1 + 20); indices.push_back(2 + 20); // First triangle
-        // indices.push_back(1 + 20); indices.push_back(2 + 20); indices.push_back(3 + 20); // Second triangle
+        // Front
+        vertices.insert(vertices.end(), {-1.0, -1.0, 1.0, 1.0f, 0.0f, 0.0f});
+        vertices.insert(vertices.end(), {1.0, -1.0, 1.0, 1.0f, 0.0f, 0.0f});
+        vertices.insert(vertices.end(), {-1.0, 1.0, 1.0, 1.0f, 0.0f, 0.0f});
+        vertices.insert(vertices.end(), {1.0, 1.0, 1.0, 1.0f, 0.0f, 0.0f});
+        indices.push_back(0 + 20); indices.push_back(1 + 20); indices.push_back(2 + 20); // First triangle
+        indices.push_back(3 + 20); indices.push_back(2 + 20); indices.push_back(1 + 20); // Second triangle
 
         // clang-format on
     }

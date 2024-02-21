@@ -203,12 +203,16 @@ namespace framework
         int elementIndex = 0;
         int sizeOfAttributes = getAttributesSum();
 
+        int vSize = 0, eSize = 0;
+
         for (int i = 0; i < elements.size(); i++)
         {
+            // Keep track of global vertices and indices sizes
+            vSize += elements[i]->getVertices().size();
+            eSize += elements[i]->getIndices().size();
+
             if (elements[i]->isUpdated())
             {
-                // TODO check that the vertex and index vectors dimensions has not been changed
-
                 // Save the reference of the two vectors
                 const std::vector<float> v = elements[i]->getVertices();
 
@@ -243,6 +247,12 @@ namespace framework
 
             vertexIndex += elements[i]->getVertices().size();
             elementIndex += elements[i]->getIndices().size();
+        }
+
+        // The array dimensions is changed
+        if (vSize != vertexSize || eSize != indicesSize)
+        {
+            throw std::runtime_error("[DrawableCollection] Changed vertices of elements size");
         }
     }
 

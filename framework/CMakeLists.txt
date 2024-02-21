@@ -14,6 +14,7 @@ set(FRAMEWORK_CORE
     core/swapChain.cpp
     core/texture.cpp
     core/vulkan.cpp
+    core/semaphore.cpp
 )
 
 set(FRAMEWORK_DEVICES

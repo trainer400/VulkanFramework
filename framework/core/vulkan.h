@@ -15,6 +15,7 @@
 #include <core/frameBufferCollection.h>
 #include <core/commandBuffer.h>
 #include <core/commandPool.h>
+#include <core/semaphore.h>
 #include <vector>
 #include <memory>
 
@@ -137,6 +138,8 @@ namespace framework
         std::vector<std::shared_ptr<Pipeline>> pipelines;
         std::unique_ptr<FrameBufferCollection> frameBufferCollection;
         std::unique_ptr<CommandBuffer> commandBuffer;
+        std::unique_ptr<Semaphore> imageAvailable;
+        std::unique_ptr<Semaphore> renderFinished;
 
         // Timing measurements
         TimingMeasurement timings;

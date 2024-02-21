@@ -116,12 +116,8 @@ namespace framework
     {
         if (lDevice != nullptr)
         {
-            if (imageAvailableSemaphore != VK_NULL_HANDLE &&
-                renderFinishedSemaphore != VK_NULL_HANDLE &&
-                inFlightFence != VK_NULL_HANDLE)
+            if (inFlightFence != VK_NULL_HANDLE)
             {
-                vkDestroySemaphore(lDevice->getDevice(), imageAvailableSemaphore, nullptr);
-                vkDestroySemaphore(lDevice->getDevice(), renderFinishedSemaphore, nullptr);
                 vkDestroyFence(lDevice->getDevice(), inFlightFence, nullptr);
             }
         }
@@ -168,6 +164,10 @@ namespace framework
         }
 
         this->lDevice = d;
+
+        // Create the sync objects
+        imageAvailable = std::make_unique<Semaphore>(lDevice);
+        renderFinished = std::make_unique<Semaphore>(lDevice);
     }
 
     void Vulkan::selectSwapChain(std::unique_ptr<SwapChain> s)
@@ -328,18 +328,13 @@ namespace framework
             throw std::runtime_error("[Vulkan] Logical device has not been created yet");
         }
 
-        VkSemaphoreCreateInfo semaphoreInfo{};
-        semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-
         VkFenceCreateInfo fenceInfo{};
         fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 
         // Create the fence with the first state signaled (to make the draw method go ahead the first time)
         fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-        if (vkCreateSemaphore(lDevice->getDevice(), &semaphoreInfo, nullptr, &imageAvailableSemaphore) != VK_SUCCESS ||
-            vkCreateSemaphore(lDevice->getDevice(), &semaphoreInfo, nullptr, &renderFinishedSemaphore) != VK_SUCCESS ||
-            vkCreateFence(lDevice->getDevice(), &fenceInfo, nullptr, &inFlightFence) != VK_SUCCESS)
+        if (vkCreateFence(lDevice->getDevice(), &fenceInfo, nullptr, &inFlightFence) != VK_SUCCESS)
         {
             throw std::runtime_error("[Vulkan] Impossible to create sync objects");
         }
@@ -379,7 +374,7 @@ namespace framework
         start = clock::now();
 
         // When the operation is complete the imageAvailable semaphore is signaled
-        VkResult result = vkAcquireNextImageKHR(lDevice->getDevice(), swapChain->getSwapChain(), UINT64_MAX, imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+        VkResult result = vkAcquireNextImageKHR(lDevice->getDevice(), swapChain->getSwapChain(), UINT64_MAX, imageAvailable->getSemaphore(), VK_NULL_HANDLE, &imageIndex);
 
         // Record time to acquire image
         timings.timeToAcquireImage = std::chrono::duration_cast<micros>(clock::now() - start).count() / 1000.f;
@@ -432,7 +427,7 @@ namespace framework
 
         submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-        VkSemaphore waitSemaphores[] = {imageAvailableSemaphore};
+        VkSemaphore waitSemaphores[] = {imageAvailable->getSemaphore()};
         VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
         submitInfo.waitSemaphoreCount = 1;
         submitInfo.pWaitSemaphores = waitSemaphores;
@@ -440,7 +435,7 @@ namespace framework
         submitInfo.commandBufferCount = 1;
         submitInfo.pCommandBuffers = &commandBuffer->getCommandBuffer();
 
-        VkSemaphore signalSemaphores[] = {renderFinishedSemaphore};
+        VkSemaphore signalSemaphores[] = {renderFinished->getSemaphore()};
         submitInfo.signalSemaphoreCount = 1;
         submitInfo.pSignalSemaphores = signalSemaphores;
 

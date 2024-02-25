@@ -7,12 +7,6 @@
 #include <vector>
 #include <memory>
 
-#include <ImGui/imgui.h>
-#include <ImGui/backends/imgui_impl_glfw.h>
-#include <ImGui/backends/imgui_impl_vulkan.h>
-
-#include <ImPlot/implot.h>
-
 namespace framework
 {
     class Vulkan

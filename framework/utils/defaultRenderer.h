@@ -14,6 +14,12 @@
 #include <core/semaphore.h>
 #include <core/fence.h>
 
+#include <ImGui/imgui.h>
+#include <ImGui/backends/imgui_impl_glfw.h>
+#include <ImGui/backends/imgui_impl_vulkan.h>
+
+#include <ImPlot/implot.h>
+
 #include <memory>
 
 namespace framework

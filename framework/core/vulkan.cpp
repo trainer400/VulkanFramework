@@ -237,25 +237,7 @@ namespace framework
         }
 
         commandBuffer->beginRecording();
-
-        // Start the render pass
-        VkRenderPassBeginInfo renderPassInfo{};
-
-        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        renderPassInfo.renderPass = renderPass->getRenderPass();
-        renderPassInfo.framebuffer = frameBufferCollection->getFrameBuffers()[index];
-        renderPassInfo.renderArea.offset = {0, 0};
-        renderPassInfo.renderArea.extent = swapChain->getExtent();
-
-        // TODO make clear color configurable
-        std::vector<VkClearValue> clearValues;
-        clearValues.push_back(clearColor);
-        clearValues.push_back({1.0f, 0.0f}); // Depth and stencil
-
-        renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
-        renderPassInfo.pClearValues = clearValues.data();
-
-        vkCmdBeginRenderPass(commandBuffer->getCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+        renderPass->begin(commandBuffer->getCommandBuffer(), frameBufferCollection->getFrameBuffers()[index], swapChain->getExtent(), clearColor);
 
         for (const std::shared_ptr<Pipeline> &pipeline : pipelines)
         {
@@ -307,10 +289,8 @@ namespace framework
             ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer->getCommandBuffer());
         }
 
-        // End the render pass
-        vkCmdEndRenderPass(commandBuffer->getCommandBuffer());
-
         // Finish stopping the buffer recording
+        renderPass->end(commandBuffer->getCommandBuffer());
         commandBuffer->stopRecording();
     }
 

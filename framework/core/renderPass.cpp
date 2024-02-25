@@ -169,6 +169,34 @@ namespace framework
         createRenderPass(extent, format);
     }
 
+    void RenderPass::begin(const VkCommandBuffer &cmdBuffer, const VkFramebuffer &frameBuffer, const VkExtent2D &extent, const VkClearValue &clearColor)
+    {
+        // Start the render pass
+        VkRenderPassBeginInfo renderPassInfo{};
+
+        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        renderPassInfo.renderPass = renderPass;
+        renderPassInfo.framebuffer = frameBuffer;
+        renderPassInfo.renderArea.offset = {0, 0};
+        renderPassInfo.renderArea.extent = extent;
+
+        // Add the user specified clear color
+        std::vector<VkClearValue> clearValues;
+        clearValues.push_back(clearColor);
+        clearValues.push_back({1.0f, 0.0f}); // Depth and stencil
+
+        renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+        renderPassInfo.pClearValues = clearValues.data();
+
+        vkCmdBeginRenderPass(cmdBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+    }
+
+    void RenderPass::end(const VkCommandBuffer &cmdBuffer)
+    {
+        // End the render pass
+        vkCmdEndRenderPass(cmdBuffer);
+    }
+
     void RenderPass::checkFormat(VkFormat format, VkImageTiling tiling, VkFormatFeatureFlags features)
     {
         // Enumerate the format properties

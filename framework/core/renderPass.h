@@ -26,6 +26,10 @@ namespace framework
          */
         void recreateRenderPass(const VkExtent2D &extent, const VkSurfaceFormatKHR &format);
 
+        // Render pass functions
+        void begin(const VkCommandBuffer &cmdBuffer, const VkFramebuffer &frameBuffer, const VkExtent2D &extent, const VkClearValue &clearColor);
+        void end(const VkCommandBuffer &cmdBuffer);
+
         // Getters
         const VkRenderPass &getRenderPass() { return renderPass; }
         const VkImageView &getDepthImageView() { return depthImageView; }

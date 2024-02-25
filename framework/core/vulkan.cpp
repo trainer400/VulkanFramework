@@ -114,14 +114,6 @@ namespace framework
 
     Vulkan::~Vulkan()
     {
-        if (lDevice != nullptr)
-        {
-            if (inFlightFence != VK_NULL_HANDLE)
-            {
-                vkDestroyFence(lDevice->getDevice(), inFlightFence, nullptr);
-            }
-        }
-
         if (imGuiActive)
         {
             ImGui_ImplVulkan_Shutdown();
@@ -168,6 +160,7 @@ namespace framework
         // Create the sync objects
         imageAvailable = std::make_unique<Semaphore>(lDevice);
         renderFinished = std::make_unique<Semaphore>(lDevice);
+        inFlight = std::make_unique<Fence>(lDevice, true);
     }
 
     void Vulkan::selectSwapChain(std::unique_ptr<SwapChain> s)
@@ -321,25 +314,6 @@ namespace framework
         commandBuffer->stopRecording();
     }
 
-    void Vulkan::createSyncObjects()
-    {
-        if (lDevice == nullptr)
-        {
-            throw std::runtime_error("[Vulkan] Logical device has not been created yet");
-        }
-
-        VkFenceCreateInfo fenceInfo{};
-        fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-
-        // Create the fence with the first state signaled (to make the draw method go ahead the first time)
-        fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-
-        if (vkCreateFence(lDevice->getDevice(), &fenceInfo, nullptr, &inFlightFence) != VK_SUCCESS)
-        {
-            throw std::runtime_error("[Vulkan] Impossible to create sync objects");
-        }
-    }
-
     VkResult Vulkan::draw(VkClearValue clearColor)
     {
         using clock = std::chrono::steady_clock;
@@ -351,7 +325,7 @@ namespace framework
         // Start time for fence wait function
         auto start = clock::now();
         // Wait for previous frame to be completed
-        vkWaitForFences(lDevice->getDevice(), 1, &inFlightFence, VK_TRUE, UINT64_MAX);
+        inFlight->waitFor(1);
 
         // Record fence wait time
         timings.timeToWaitFence = std::chrono::duration_cast<micros>(clock::now() - start).count() / 1000.f;
@@ -386,7 +360,7 @@ namespace framework
         }
 
         // Reset the fence
-        vkResetFences(lDevice->getDevice(), 1, &inFlightFence);
+        inFlight->reset(1);
 
         // Reset the command buffer
         vkResetCommandBuffer(commandBuffer->getCommandBuffer(), 0);
@@ -439,7 +413,7 @@ namespace framework
         submitInfo.signalSemaphoreCount = 1;
         submitInfo.pSignalSemaphores = signalSemaphores;
 
-        if (vkQueueSubmit(lDevice->getGraphicsQueue(), 1, &submitInfo, inFlightFence) != VK_SUCCESS)
+        if (vkQueueSubmit(lDevice->getGraphicsQueue(), 1, &submitInfo, inFlight->getFence()) != VK_SUCCESS)
         {
             throw std::runtime_error("[Vulkan] Failed tu submit draw command buffer to graphics queue");
         }

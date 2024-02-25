@@ -15,6 +15,7 @@ set(FRAMEWORK_CORE
     core/texture.cpp
     core/vulkan.cpp
     core/semaphore.cpp
+    core/fence.cpp
 )
 
 set(FRAMEWORK_DEVICES

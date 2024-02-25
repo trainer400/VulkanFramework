@@ -201,7 +201,6 @@ int main()
     vulkan->selectRenderPass(move(renderPass));
     vulkan->selectFrameBufferCollection(move(frameBufferCollection));
     vulkan->selectCommandBuffer(move(commandBuffer));
-    vulkan->createSyncObjects();
 
     // Create imgui
     vulkan->setupImGui(window->getWindow(), [&]() {});

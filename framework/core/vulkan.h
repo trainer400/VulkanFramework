@@ -16,6 +16,7 @@
 #include <core/commandBuffer.h>
 #include <core/commandPool.h>
 #include <core/semaphore.h>
+#include <core/fence.h>
 #include <vector>
 #include <memory>
 
@@ -92,12 +93,6 @@ namespace framework
         void recordCommandBuffer(uint32_t index, VkClearValue clearColor);
 
         /**
-         * @brief Creates the two semaphores and the fence needed to make the CPU wait for rendering action to be completed
-         * and the GPU wait for image available and render finish.
-         */
-        void createSyncObjects();
-
-        /**
          * @brief Call to the command buffer to draw on screen the previously specified objects
          */
         VkResult draw(VkClearValue clearColor);
@@ -125,11 +120,6 @@ namespace framework
         // Vulkan objects
         VkInstance instance = VK_NULL_HANDLE;
 
-        // Sync objects
-        VkSemaphore imageAvailableSemaphore = VK_NULL_HANDLE;
-        VkSemaphore renderFinishedSemaphore = VK_NULL_HANDLE;
-        VkFence inFlightFence = VK_NULL_HANDLE;
-
         // Framework objects
         std::shared_ptr<LogicalDevice> lDevice;
         std::unique_ptr<WindowSurface> surface;
@@ -140,6 +130,7 @@ namespace framework
         std::unique_ptr<CommandBuffer> commandBuffer;
         std::unique_ptr<Semaphore> imageAvailable;
         std::unique_ptr<Semaphore> renderFinished;
+        std::unique_ptr<Fence> inFlight;
 
         // Timing measurements
         TimingMeasurement timings;

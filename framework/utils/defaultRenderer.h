@@ -32,11 +32,13 @@ namespace framework
     {
     public:
         DefaultRenderer();
+        ~DefaultRenderer();
 
         /**
          * @brief Sets the vulkan object
          */
-        void selectInstance(const std::shared_ptr<Vulkan> &v);
+        void
+        selectInstance(const std::shared_ptr<Vulkan> &v);
 
         /**
          * @brief Sets the window surface, which is mandatory to find the queue family

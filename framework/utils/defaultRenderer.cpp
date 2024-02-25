@@ -7,6 +7,20 @@ namespace framework
     {
     }
 
+    DefaultRenderer::~DefaultRenderer()
+    {
+        if (imGuiActive)
+        {
+            ImGui_ImplVulkan_Shutdown();
+            ImGui_ImplGlfw_Shutdown();
+            ImPlot::DestroyContext();
+            ImGui::DestroyContext();
+
+            // Delete custom ImGUI descriptor pool
+            vkDestroyDescriptorPool(lDevice->getDevice(), guiPool, nullptr);
+        }
+    }
+
     void DefaultRenderer::selectInstance(const std::shared_ptr<Vulkan> &v)
     {
         if (v == nullptr)

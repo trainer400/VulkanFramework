@@ -7,6 +7,7 @@
 #include <framework/window/window.h>
 #include <framework/utils/camera.h>
 #include <framework/core/uniformBuffer.h>
+#include <framework/utils/defaultRenderer.h>
 
 using namespace std;
 using namespace framework;
@@ -20,6 +21,7 @@ shared_ptr<Pipeline> cubePipeline;
 unique_ptr<SwapChain> swapChain;
 unique_ptr<RenderPass> renderPass;
 unique_ptr<FrameBufferCollection> frameBufferCollection;
+unique_ptr<DefaultRenderer> renderer;
 Camera camera{45, 0.1f, 100.0f};
 
 struct GlobalUniformBuffer
@@ -129,7 +131,7 @@ void createGraphicsObjects()
     cubePipeline = make_shared<Pipeline>(lDevice, move(cubeCollection), renderPass->getDepthTestType(), renderPass->getRenderPass(), config);
 
     // Add the pipeline to the renderer
-    vulkan->addPipeline(cubePipeline);
+    renderer->addPipeline(cubePipeline);
 }
 
 void updateUniformBuffer()
@@ -155,7 +157,7 @@ void onUpdate()
     updateUniformBuffer();
 
     // Draw the frame
-    vulkan->draw({0.0f, 0.0f, 0.0f, 1.0f});
+    renderer->draw({0.0f, 0.0f, 0.0f, 1.0f});
 }
 
 void onClose()
@@ -165,7 +167,7 @@ void onClose()
 
 void onUpdateSize()
 {
-    vulkan->manageResize(window);
+    renderer->manageResize(window);
 }
 
 int main()
@@ -192,18 +194,22 @@ int main()
     frameBufferCollection = make_unique<FrameBufferCollection>(lDevice, swapChain->getImageViews(), swapChain->getExtent(),
                                                                renderPass->getDepthTestType(), renderPass->getDepthImageView(), renderPass->getRenderPass());
 
+    // Create the renderer object
+    renderer = make_unique<DefaultRenderer>();
+
     createGraphicsObjects();
 
     // Select the graphical objects
-    vulkan->selectSurface(move(surface));
-    vulkan->selectLogicalDevice(lDevice);
-    vulkan->selectSwapChain(move(swapChain));
-    vulkan->selectRenderPass(move(renderPass));
-    vulkan->selectFrameBufferCollection(move(frameBufferCollection));
-    vulkan->selectCommandBuffer(move(commandBuffer));
+    renderer->selectInstance(vulkan);
+    renderer->selectSurface(move(surface));
+    renderer->selectLogicalDevice(lDevice);
+    renderer->selectSwapChain(move(swapChain));
+    renderer->selectRenderPass(move(renderPass));
+    renderer->selectFrameBufferCollection(move(frameBufferCollection));
+    renderer->selectCommandBuffer(move(commandBuffer));
 
     // Create imgui
-    vulkan->setupImGui(window->getWindow(), [&]() {});
+    renderer->setupImGui(window->getWindow(), [&]() {});
 
     // Set camera position
     camera.setPosition({0, 2.0f, -10.0f});

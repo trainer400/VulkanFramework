@@ -1,0 +1,2 @@
+examples/OBJeffect/models/Rock_5.obj filter=lfs diff=lfs merge=lfs -text
+examples/OBJeffect/models/Rock_5_Base_Color.jpg filter=lfs diff=lfs merge=lfs -text

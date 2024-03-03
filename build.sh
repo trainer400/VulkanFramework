@@ -11,3 +11,4 @@ cmake -G Ninja ../ && cmake --build .
 
 # Move the result into the main directory
 mv cube ../cube
+mv OBJeffect ../OBJeffect

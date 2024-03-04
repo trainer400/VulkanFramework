@@ -24,11 +24,19 @@ unique_ptr<DefaultRenderer> renderer;
 FPSCamera camera{100, 45, 0.1f, 10000.0f, {}};
 bool mouseFix = true; // Sets the mouse position at the center
 
+// Test variables
+glm::vec3 planeDirection;
+float colorMagnitude;
+float wireFrameMagnitude;
+
 struct GlobalUniformBuffer
 {
     alignas(16) glm::mat4 model;
     alignas(16) glm::mat4 view;
     alignas(16) glm::mat4 projection;
+    alignas(16) glm::vec3 spawnPlaneDirection;
+    alignas(4) float colorSpawnPlaneMagnitude;
+    alignas(4) float wireFrameSpawnPlaneMagnitude;
 };
 
 // Uniform buffer
@@ -141,6 +149,20 @@ void onUpdateSize()
     renderer->manageResize(window);
 }
 
+void setupGui()
+{
+    ImGui::Begin("Prova");
+
+    // Create slider for spawn plane and magnitudes
+    ImGui::DragFloat3("Plane direction", &planeDirection.x, 0.001f, -1.0f, 1.0f, "%.3f");
+    ImGui::DragFloat("Color magnitude", &colorMagnitude, 10.0f, -10000.0f, 10000.0f, "%.1f");
+    ImGui::DragFloat("Wireframe magnitude", &wireFrameMagnitude, 10.0f, -10000.0f, 10000.0f, "%.1f");
+
+    ImGui::End();
+
+    ImGui::ShowDemoWindow();
+}
+
 int main()
 {
     // Requested extensions
@@ -181,7 +203,8 @@ int main()
     renderer->selectCommandBuffer(move(commandBuffer));
 
     // Create imgui
-    renderer->setupImGui(window->getWindow(), [&]() {});
+    renderer->setupImGui(window->getWindow(), [&]()
+                         { setupGui(); });
 
     // Setup camera
     camera.setPosition({0, 2.0f, -10.0f});
@@ -190,6 +213,11 @@ int main()
     // Add a callback for ESC
     window->addKeyCallback(GLFW_KEY_ESCAPE, [&](int key, int action)
                            { if(action == GLFW_PRESS){mouseFix = !mouseFix;} });
+
+    // Setup test variables
+    planeDirection = {0, 0, 0};
+    colorMagnitude = 0.5f;
+    wireFrameMagnitude = 1.0f;
 
     // Run the window
     window->run([=]()

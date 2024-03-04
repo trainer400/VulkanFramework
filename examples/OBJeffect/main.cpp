@@ -40,7 +40,9 @@ class Terrain : public DrawableElement
 public:
     Terrain()
     {
-        ObjectParser parser{"examples/OBJeffect/models/Rock_5.obj", {}};
+        ObjectParserConfiguration config;
+        config.addMedians = true;
+        ObjectParser parser{"examples/OBJeffect/models/Rock_5.obj", config};
         indices = parser.getIndices();
         vertices = parser.getVertices();
     }
@@ -81,6 +83,7 @@ void createGraphicsObjects()
     cubeCollection->addElement(make_shared<Terrain>());
     cubeCollection->addAttribute(DrawableAttribute::F3);
     cubeCollection->addAttribute(DrawableAttribute::F2);
+    cubeCollection->addAttribute(DrawableAttribute::F3);
     cubeCollection->addAttribute(DrawableAttribute::F3);
     cubeCollection->allocate();
 

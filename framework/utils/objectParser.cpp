@@ -3,6 +3,7 @@
 #include <fstream>
 #include <stdexcept>
 #include <sstream>
+#include <iostream>
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <libs/tiny_obj_loader.h>
@@ -11,7 +12,7 @@ using namespace std;
 
 namespace framework
 {
-    ObjectParser::ObjectParser(const char *filename, const ObjectParserConfiguration &config)
+    ObjectParser::ObjectParser(const char *filename, const ObjectParserConfiguration &config) : config(config)
     {
         if (filename == nullptr)
         {
@@ -39,7 +40,7 @@ namespace framework
             throw std::runtime_error("[ObjectParser] Error from tiny-OBJ: " + warn + err);
         }
 
-        vertexSize = 3 + (config.hasTexture ? 2 : 0) + (config.hasNormals ? 3 : 0);
+        vertexSize = 3 + (config.hasTexture ? 2 : 0) + (config.hasNormals ? 3 : 0) + (config.addMedians ? 3 : 0);
 
         for (const auto &shape : shapes)
         {
@@ -63,6 +64,21 @@ namespace framework
                     vertices.push_back((config.rightHandedRef ? -1 : 1) * attrib.normals[3 * index.normal_index + 0]);
                     vertices.push_back(attrib.normals[3 * index.normal_index + 1]);
                     vertices.push_back(attrib.normals[3 * index.normal_index + 2]);
+                }
+
+                if (config.addMedians)
+                {
+                    // Insert point with 1 on the axis of this index % 3
+                    std::vector<float> med;
+                    med.insert(med.end(), {0, 0, 0});
+
+                    // Total length is 1 and the position depends on the vertex in the triangle
+                    med[indices.size() % 3] = 1.0f;
+
+                    // Insert the median inside the vertices
+                    vertices.push_back(med[0]);
+                    vertices.push_back(med[1]);
+                    vertices.push_back(med[2]);
                 }
 
                 // Insert the index

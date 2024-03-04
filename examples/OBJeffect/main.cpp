@@ -40,7 +40,7 @@ class Terrain : public DrawableElement
 public:
     Terrain()
     {
-        ObjectParser parser{"examples/OBJeffect/models/Rock_5.obj", true, true, true};
+        ObjectParser parser{"examples/OBJeffect/models/Rock_5.obj", {}};
         indices = parser.getIndices();
         vertices = parser.getVertices();
     }

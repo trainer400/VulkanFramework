@@ -6,10 +6,19 @@
 
 namespace framework
 {
+    struct ObjectParserConfiguration
+    {
+        bool hasTexture = true;
+        bool hasNormals = true;
+        bool rightHandedRef = true;
+        bool addMedians = false;
+        float multiplicationFactor = 1.0f;
+    };
+
     class ObjectParser
     {
     public:
-        ObjectParser(const char *filename, bool hasTexture, bool hasNormals, bool rightHandedRef, float multiplication_factor = 1.0f);
+        ObjectParser(const char *filename, const ObjectParserConfiguration &config);
 
         // Getters
         inline const std::vector<float> &getVertices() { return vertices; }
@@ -20,9 +29,10 @@ namespace framework
         /**
          * @brief Parses the object file
          */
-        void parse(const char *filename, bool hasTexture, bool hasNormals, bool rightHandedRef);
+        void parse(const char *filename);
 
-        float MULTIPLICATION_FACTOR;
+        // Configuration
+        ObjectParserConfiguration config;
 
         std::vector<float> vertices;
         std::vector<uint32_t> indices;

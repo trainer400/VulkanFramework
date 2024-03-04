@@ -27,7 +27,6 @@ bool mouseFix = true; // Sets the mouse position at the center
 // Test variables
 glm::vec3 planeDirection;
 float colorMagnitude;
-float wireFrameMagnitude;
 
 struct GlobalUniformBuffer
 {
@@ -36,7 +35,6 @@ struct GlobalUniformBuffer
     alignas(16) glm::mat4 projection;
     alignas(16) glm::vec3 spawnPlaneDirection;
     alignas(4) float colorSpawnPlaneMagnitude;
-    alignas(4) float wireFrameSpawnPlaneMagnitude;
 };
 
 // Uniform buffer
@@ -73,7 +71,7 @@ void createGraphicsObjects()
     // Create the uniform buffer
     UniformBufferConfiguration guboConfig;
     guboConfig.bindingIndex = 0;
-    guboConfig.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+    guboConfig.stageFlags = VK_SHADER_STAGE_ALL;
     gubo = make_shared<UniformBuffer<GlobalUniformBuffer>>(lDevice, guboConfig);
 
     // Create the texture
@@ -107,6 +105,10 @@ void createGraphicsObjects()
 void updateUniformBuffer()
 {
     GlobalUniformBuffer buf{};
+
+    // Set the plane values
+    buf.spawnPlaneDirection = planeDirection;
+    buf.colorSpawnPlaneMagnitude = colorMagnitude;
 
     // Set the data to transfer
     buf.model = glm::rotate(glm::mat4(1.0f), glm::radians(-90.f), glm::vec3(0, 1.0f, 0)) *
@@ -156,7 +158,6 @@ void setupGui()
     // Create slider for spawn plane and magnitudes
     ImGui::DragFloat3("Plane direction", &planeDirection.x, 0.001f, -1.0f, 1.0f, "%.3f");
     ImGui::DragFloat("Color magnitude", &colorMagnitude, 10.0f, -10000.0f, 10000.0f, "%.1f");
-    ImGui::DragFloat("Wireframe magnitude", &wireFrameMagnitude, 10.0f, -10000.0f, 10000.0f, "%.1f");
 
     ImGui::End();
 
@@ -215,9 +216,8 @@ int main()
                            { if(action == GLFW_PRESS){mouseFix = !mouseFix;} });
 
     // Setup test variables
-    planeDirection = {0, 0, 0};
-    colorMagnitude = 0.5f;
-    wireFrameMagnitude = 1.0f;
+    planeDirection = {-1, 0, 0};
+    colorMagnitude = 1.f;
 
     // Run the window
     window->run([=]()

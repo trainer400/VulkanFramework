@@ -7,7 +7,6 @@ layout(binding = 0) uniform globalUniformBuffer
     mat4 projection;
     vec3 spawnPlaneDirection;
     float colorSpawnPlaneMagnitude;
-    float wireFrameSpawnPlaneMagnitude;
 } gubo;
 
 layout (location = 0) in vec3 inPosition;
@@ -18,9 +17,6 @@ layout (location = 3) in vec3 inMedian;
 layout (location = 0) out vec2 outTexCoord;
 layout (location = 1) out vec3 outMedian;
 layout (location = 2) out vec4 outFragPos;
-layout (location = 3) out vec3 outSpawnPlaneDirection;
-layout (location = 4) out float outColorSpawnPlaneMagnitude;
-layout (location = 5) out float outWireFrameSpawnPlaneMagnitude;
 
 void main()
 {

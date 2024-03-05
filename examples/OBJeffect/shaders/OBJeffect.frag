@@ -17,7 +17,7 @@ layout (location = 0) out vec4 outColor;
 
 layout (binding = 1) uniform sampler2D tex;
 
-#define BOUNDARIES 50
+#define BOUNDARIES 100
 
 void main()
 {
@@ -45,5 +45,10 @@ void main()
         {
             outColor = vec4(1.0, 1.0, 1.0, 1.0);
         }
+    }
+
+    if(outColor.a == 0)
+    {
+        discard;
     }
 }

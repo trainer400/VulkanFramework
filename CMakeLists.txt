@@ -25,3 +25,12 @@ target_include_directories(OBJeffect PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/framewor
 target_include_directories(OBJeffect PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/framework/libs)
 target_include_directories(OBJeffect PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/framework/libs/ImGui)
 target_include_directories(OBJeffect PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/framework/libs/ImPlot)
+
+# Digital Sea
+add_executable(digitalSea examples/digitalSea/main.cpp)
+target_link_libraries(digitalSea PUBLIC framework vulkan glfw)
+target_include_directories(digitalSea PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/)
+target_include_directories(digitalSea PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/framework)
+target_include_directories(digitalSea PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/framework/libs)
+target_include_directories(digitalSea PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/framework/libs/ImGui)
+target_include_directories(digitalSea PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/framework/libs/ImPlot)

@@ -160,8 +160,6 @@ void setupGui()
     ImGui::DragFloat("Color magnitude", &colorMagnitude, 10.0f, -10000.0f, 10000.0f, "%.1f");
 
     ImGui::End();
-
-    ImGui::ShowDemoWindow();
 }
 
 int main()

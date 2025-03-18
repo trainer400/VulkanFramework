@@ -4,6 +4,8 @@
 #include <stdexcept>
 #include <fstream>
 #include <iostream>
+#include <string>
+#include <algorithm>
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <libs/tiny_obj_loader.h>
@@ -54,6 +56,16 @@ namespace framework
         if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, filename, mtl_path.c_str()))
         {
             throw std::runtime_error("[ObjectParser] Error from tiny-OBJ: " + warn + err);
+        }
+
+        // Populate the texture paths (TODO use different texture types other than diffuse lights)
+        for (const auto &mat : materials)
+        {
+            std::string path = mtl_path + mat.diffuse_texname;
+
+            // Replace \ path with /
+            std::replace(path.begin(), path.end(), '\\', '/');
+            diffuseTexturePaths.push_back(path);
         }
 
         // The last +1 is for the material index (TODO use uint for material index)

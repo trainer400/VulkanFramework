@@ -13,6 +13,7 @@ set(FRAMEWORK_CORE
     core/shader.cpp
     core/swapChain.cpp
     core/texture.cpp
+    core/textureCollection.cpp
     core/vulkan.cpp
     core/semaphore.cpp
     core/fence.cpp

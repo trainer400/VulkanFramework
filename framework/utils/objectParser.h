@@ -12,6 +12,7 @@ namespace framework
         bool hasNormals = true;
         bool rightHandedRef = true;
         bool addMedians = false;
+        bool invertTexture = false;
         float multiplicationFactor = 1.0f;
     };
 

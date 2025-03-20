@@ -39,8 +39,6 @@ namespace framework
             imageInfos.push_back(VkDescriptorImageInfo{});
         }
 
-        std::cout << imageInfos.size() << std::endl;
-
         // Create and store the textures on the GPU
         for (size_t i = 0; i < filenames.size(); i++)
         {

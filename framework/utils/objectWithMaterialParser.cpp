@@ -86,7 +86,7 @@ namespace framework
                 {
                     // Insert the texture coordinates
                     vertices.push_back(attrib.texcoords[2 * index.texcoord_index + 0]);
-                    vertices.push_back(attrib.texcoords[2 * index.texcoord_index + 1]);
+                    vertices.push_back((config.invertTexture ? -1 : 1) * attrib.texcoords[2 * index.texcoord_index + 1]);
                 }
 
                 if (config.hasNormals)

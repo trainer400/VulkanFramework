@@ -61,7 +61,11 @@ namespace framework
         // Populate the texture paths (TODO use different texture types other than diffuse lights)
         for (const auto &mat : materials)
         {
-            std::string path = mtl_path + mat.diffuse_texname;
+            std::string path = "";
+            if (mat.diffuse_texname != "")
+                path = mtl_path + mat.diffuse_texname;
+            else if (mat.alpha_texname != "")
+                path = mtl_path + mat.alpha_texname;
 
             // Replace \ path with /
             std::replace(path.begin(), path.end(), '\\', '/');

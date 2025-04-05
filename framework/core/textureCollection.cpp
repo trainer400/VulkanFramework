@@ -119,24 +119,24 @@ namespace framework
     {
         for (size_t i = 0; i < textures.size(); i++)
         {
-            TextureDescriptor& texture = textures[i];
-            VkDescriptorImageInfo& imageInfo = imageInfos[i];
+            TextureDescriptor &texture = textures[i];
+            VkDescriptorImageInfo &imageInfo = imageInfos[i];
 
             if (texture.textureImage != VK_NULL_HANDLE)
             {
                 vkDestroyImage(lDevice->getDevice(), texture.textureImage, nullptr);
             }
-    
+
             if (texture.textureImageMemory != VK_NULL_HANDLE)
             {
                 vkFreeMemory(lDevice->getDevice(), texture.textureImageMemory, nullptr);
             }
-    
+
             if (imageInfo.imageView != VK_NULL_HANDLE)
             {
                 vkDestroyImageView(lDevice->getDevice(), imageInfo.imageView, nullptr);
             }
-    
+
             if (imageInfo.sampler != VK_NULL_HANDLE)
             {
                 vkDestroySampler(lDevice->getDevice(), imageInfo.sampler, nullptr);
@@ -149,7 +149,7 @@ namespace framework
         VkDescriptorSetLayoutBinding layoutBinding{};
 
         layoutBinding.binding = bindingIndex;
-        layoutBinding.descriptorCount = 100;
+        layoutBinding.descriptorCount = textures.size();
         layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
         layoutBinding.pImmutableSamplers = nullptr;
         layoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -162,7 +162,7 @@ namespace framework
         VkDescriptorPoolSize poolSize{};
 
         poolSize.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        poolSize.descriptorCount = 100;
+        poolSize.descriptorCount = textures.size();
 
         return poolSize;
     }
@@ -175,7 +175,7 @@ namespace framework
         writeDescriptor.dstBinding = bindingIndex;
         writeDescriptor.dstArrayElement = 0;
         writeDescriptor.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        writeDescriptor.descriptorCount = 100;
+        writeDescriptor.descriptorCount = textures.size();
         writeDescriptor.pImageInfo = imageInfos.data();
 
         return writeDescriptor;

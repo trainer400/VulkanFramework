@@ -214,7 +214,7 @@ namespace framework
             if (elements[i]->isUpdated())
             {
                 // Save the reference of the two vectors
-                const std::vector<float> v = elements[i]->getVertices();
+                const std::vector<float> &v = elements[i]->getVertices();
 
                 // Copy the new changed vertices inside the vertex vector
                 for (int j = 0; j < v.size(); j++)

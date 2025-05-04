@@ -132,7 +132,7 @@ namespace framework
             }
 
             // Check if the object has transparency
-            if (materials[material_index].alpha_texname != "" && materials[material_index].dissolve < 1)
+            if (materials[material_index].alpha_texname != "" || materials[material_index].dissolve < 1)
                 has_transparency = true;
         }
 

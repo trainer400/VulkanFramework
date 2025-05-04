@@ -66,7 +66,7 @@ namespace framework
      * @brief Given the tinyobj shape, the method parses its vertices/indices producing
      * a final drawable element which can be then rendered by the framework.
      */
-    std::shared_ptr<DefaultDrawableElement> getParsedDrawableElement(uint32_t vertexSize,
+    std::shared_ptr<DefaultDrawableElement> getParsedDrawableElement(uint32_t vertex_size,
                                                                      const tinyobj::shape_t &shape,
                                                                      const tinyobj::attrib_t &attrib,
                                                                      const ObjectParserConfiguration &config)
@@ -117,7 +117,7 @@ namespace framework
             vertices.push_back(shape.mesh.material_ids[i / 3]);
 
             // Insert the index
-            indices.push_back((vertices.size() / vertexSize) - 1);
+            indices.push_back((vertices.size() / vertex_size) - 1);
 
             // If just finished to insert a triangle, when it is a right handed reference, swap the indices
             if (config.rightHandedRef && indices.size() % 3 == 0)
@@ -132,7 +132,7 @@ namespace framework
         return std::make_shared<DefaultDrawableElement>(vertices, indices);
     }
 
-    std::vector<std::shared_ptr<DefaultDrawableElement>> parseObjFile(const char *filename, const ObjectParserConfiguration &config)
+    std::vector<std::shared_ptr<DefaultDrawableElement>> parseObjFile(const char *filename, const ObjectParserConfiguration &config, std::vector<std::string>& tex_paths)
     {
         if (filename == nullptr)
             throw runtime_error("[ObjectParser] Null filename");
@@ -150,7 +150,6 @@ namespace framework
         std::string mtl_file_folder = getFolderPath(filename);
 
         // Instantiate the result variables
-        std::vector<std::string> tex_paths;
         std::vector<std::shared_ptr<DefaultDrawableElement>> result;
 
         // Load the object
@@ -158,14 +157,14 @@ namespace framework
             throw std::runtime_error("[ObjectParser] Error from tiny-OBJ: " + warn + err);
 
         // The last +1 is for the material index (TODO use uint for material index)
-        uint32_t vertexSize = 3 + (config.hasTexture ? 2 : 0) + (config.hasNormals ? 3 : 0) + (config.addMedians ? 3 : 0) + 1;
+        uint32_t vertex_size = 3 + (config.hasTexture ? 2 : 0) + (config.hasNormals ? 3 : 0) + (config.addMedians ? 3 : 0) + 1;
 
         // Get all the texture paths
         tex_paths = getTexturePaths(mtl_file_folder, materials);
 
         // Parse all the shapes
         for (const auto &shape : shapes)
-            result.push_back(getParsedDrawableElement(vertexSize, shape, attrib, config));
+            result.push_back(getParsedDrawableElement(vertex_size, shape, attrib, config));
 
         return result;
     }

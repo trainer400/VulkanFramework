@@ -1,0 +1,7 @@
+newmtl Rock_5
+Ka 0.99 0.99 0.99
+Kd 0.99 0.99 0.99
+Ks 0.0 0.0 0.0
+Ns 0.0
+d 0.9999
+map_Kd Rock_5_Base_Color.jpg

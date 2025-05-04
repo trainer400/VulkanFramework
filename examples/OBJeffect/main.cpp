@@ -41,23 +41,6 @@ struct GlobalUniformBuffer
 shared_ptr<UniformBuffer<GlobalUniformBuffer>> gubo;
 shared_ptr<Texture> texture;
 
-class Terrain : public DrawableElement
-{
-public:
-    Terrain()
-    {
-        ObjectParserConfiguration config;
-        config.addMedians = true;
-        ObjectParser parser{"examples/OBJeffect/models/Rock_5.obj", config};
-        indices = parser.getIndices();
-        vertices = parser.getVertices();
-    }
-
-    void update() override
-    {
-    }
-};
-
 void createGraphicsObjects()
 {
     shared_ptr<Shader> vertex = make_shared<Shader>(lDevice, "examples/OBJeffect/shaders/vert.spv", ShaderType::VERTEX);
@@ -74,8 +57,14 @@ void createGraphicsObjects()
     guboConfig.stageFlags = VK_SHADER_STAGE_ALL;
     gubo = make_shared<UniformBuffer<GlobalUniformBuffer>>(lDevice, guboConfig);
 
+    // Parse the obj file
+    std::vector<std::string> textures;
+    ObjectParserConfiguration parser_config;
+    parser_config.addMedians = true;
+    std::vector<std::shared_ptr<DefaultDrawableElement>> drawable_elements = parseObjFile("examples/OBJeffect/models/Rock_5.obj", parser_config, textures);
+
     // Create the texture
-    texture = make_shared<Texture>(lDevice, commandPool->getCommandPool(), "examples/OBJeffect/models/Rock_5_Base_Color.jpg", 1);
+    texture = make_shared<Texture>(lDevice, commandPool->getCommandPool(), textures[0].c_str(), 1);
 
     // Create the descriptor set
     std::vector<shared_ptr<DescriptorElement>> elements;
@@ -86,11 +75,15 @@ void createGraphicsObjects()
 
     // Create the drawable collection
     unique_ptr<DrawableCollection> cubeCollection = make_unique<DrawableCollection>(lDevice, move(descriptor), commandPool->getCommandPool(), shaders);
-    cubeCollection->addElement(make_shared<Terrain>());
+    
+    // Add the drawable elements
+    for (auto &e : drawable_elements)
+        cubeCollection->addElement(e);
     cubeCollection->addAttribute(DrawableAttribute::F3);
     cubeCollection->addAttribute(DrawableAttribute::F2);
     cubeCollection->addAttribute(DrawableAttribute::F3);
     cubeCollection->addAttribute(DrawableAttribute::F3);
+    cubeCollection->addAttribute(DrawableAttribute::F1);
     cubeCollection->allocate();
 
     // Create the pipeline

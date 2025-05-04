@@ -24,6 +24,10 @@ namespace framework
      * The user can decide to include textures/normals, to scale the model and 
      * eventually to add medians to it. The method is also tolerant to different
      * texture mapping formats, having a flag named "invertTexture". 
+     * 
+     * @param tex_paths is a user vector that is modified by the method to include the texture names in the correct order.
+     * @warning The texture ordering is the same which is then used by every vertex inside memory, so it is important
+     * to keep the initial object ordering.
      */
-    std::vector<std::shared_ptr<DefaultDrawableElement>> parseObjFile(const char *filename, const ObjectParserConfiguration &config);
+    std::vector<std::shared_ptr<DefaultDrawableElement>> parseObjFile(const char *filename, const ObjectParserConfiguration &config, std::vector<std::string>& tex_paths);
 }

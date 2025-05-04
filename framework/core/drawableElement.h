@@ -30,4 +30,16 @@ namespace framework
 
         bool updated = true;
     };
+
+    class DefaultDrawableElement : public DrawableElement
+    {
+    public:
+        DefaultDrawableElement(const std::vector<float> &vertices, const std::vector<uint32_t> &indices)
+        {
+            this->vertices = vertices;
+            this->indices = indices;
+        }
+
+        void update() {}
+    };
 }

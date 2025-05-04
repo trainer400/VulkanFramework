@@ -3,6 +3,9 @@
 #include <vector>
 #include <stdint.h>
 #include <string>
+#include <memory>
+
+#include <core/drawableElement.h>
 
 namespace framework
 {
@@ -16,28 +19,11 @@ namespace framework
         float multiplicationFactor = 1.0f;
     };
 
-    class ObjectParser
-    {
-    public:
-        ObjectParser(const char *filename, const ObjectParserConfiguration &config);
-
-        // Getters
-        inline const std::vector<float> &getVertices() { return vertices; }
-        inline const std::vector<uint32_t> &getIndices() { return indices; }
-        inline uint32_t getVertexSize() { return vertexSize; }
-
-    private:
-        /**
-         * @brief Parses the object file
-         */
-        void parse(const char *filename);
-
-        // Configuration
-        ObjectParserConfiguration config;
-
-        std::vector<float> vertices;
-        std::vector<uint32_t> indices;
-
-        uint32_t vertexSize = 0;
-    };
+    /**
+     * @brief The method parses an object file with the passed configuration.
+     * The user can decide to include textures/normals, to scale the model and 
+     * eventually to add medians to it. The method is also tolerant to different
+     * texture mapping formats, having a flag named "invertTexture". 
+     */
+    std::vector<std::shared_ptr<DefaultDrawableElement>> parseObjFile(const char *filename, const ObjectParserConfiguration &config);
 }

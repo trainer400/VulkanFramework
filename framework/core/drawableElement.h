@@ -34,12 +34,18 @@ namespace framework
     class DefaultDrawableElement : public DrawableElement
     {
     public:
-        DefaultDrawableElement(const std::vector<float> &vertices, const std::vector<uint32_t> &indices)
+        DefaultDrawableElement(const std::vector<float> &vertices, const std::vector<uint32_t> &indices, bool transparent)
         {
             this->vertices = vertices;
             this->indices = indices;
+            this->is_transparent = transparent;
         }
 
         void update() {}
+
+        bool isTransparent() { return is_transparent; }
+
+    private:
+        bool is_transparent = false;
     };
 }

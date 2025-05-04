@@ -69,10 +69,12 @@ namespace framework
     std::shared_ptr<DefaultDrawableElement> getParsedDrawableElement(uint32_t vertex_size,
                                                                      const tinyobj::shape_t &shape,
                                                                      const tinyobj::attrib_t &attrib,
+                                                                     const std::vector<tinyobj::material_t> &materials,
                                                                      const ObjectParserConfiguration &config)
     {
         std::vector<float> vertices;
         std::vector<uint32_t> indices;
+        bool has_transparency = false;
 
         for (size_t i = 0; i < shape.mesh.indices.size(); i++)
         {
@@ -112,9 +114,11 @@ namespace framework
                 vertices.push_back(med[1]);
                 vertices.push_back(med[2]);
             }
+            
+            uint32_t material_index = shape.mesh.material_ids[i / 3];
 
             // Insert the material index inside the vertex (/3 because it is the same for every vertex in the same triangle)
-            vertices.push_back(shape.mesh.material_ids[i / 3]);
+            vertices.push_back(material_index);
 
             // Insert the index
             indices.push_back((vertices.size() / vertex_size) - 1);
@@ -126,10 +130,14 @@ namespace framework
                 indices[indices.size() - 1] = indices[indices.size() - 2];
                 indices[indices.size() - 2] = temp;
             }
+
+            // Check if the object has transparency
+            if (materials[material_index].alpha_texname != "" && materials[material_index].dissolve < 1)
+                has_transparency = true;
         }
 
         // Create the result drawable object
-        return std::make_shared<DefaultDrawableElement>(vertices, indices);
+        return std::make_shared<DefaultDrawableElement>(vertices, indices, has_transparency);
     }
 
     std::vector<std::shared_ptr<DefaultDrawableElement>> parseObjFile(const char *filename, const ObjectParserConfiguration &config, std::vector<std::string>& tex_paths)
@@ -164,7 +172,7 @@ namespace framework
 
         // Parse all the shapes
         for (const auto &shape : shapes)
-            result.push_back(getParsedDrawableElement(vertex_size, shape, attrib, config));
+            result.push_back(getParsedDrawableElement(vertex_size, shape, attrib, materials, config));
 
         return result;
     }

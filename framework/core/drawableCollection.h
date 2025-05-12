@@ -16,14 +16,6 @@
 
 namespace framework
 {
-    enum DrawableAttribute : uint32_t
-    {
-        F1 = VK_FORMAT_R32_SFLOAT,
-        F2 = VK_FORMAT_R32G32_SFLOAT,
-        F3 = VK_FORMAT_R32G32B32_SFLOAT,
-        F4 = VK_FORMAT_R32G32B32A32_SFLOAT
-    };
-
     class DrawableCollection
     {
     public:
@@ -35,17 +27,6 @@ namespace framework
          * @throws Runtime Exception if the buffer has already been allocated
          */
         void addElement(const std::shared_ptr<DrawableElement> &element);
-
-        /**
-         * @brief Adds an attribute to the vertex description unless the buffer has already been allocated
-         * @throws Runtime Exception if the buffer has already been allocated
-         * @note Attributes are expressed as VkFormats in vulkan
-         * float: VK_FORMAT_R32_SFLOAT
-         * vec2: VK_FORMAT_R32G32_SFLOAT
-         * vec3: VK_FORMAT_R32G32B32_SFLOAT
-         * vec4: VK_FORMAT_R32G32B32A32_SFLOAT
-         */
-        void addAttribute(DrawableAttribute attribute);
 
         /**
          * @brief Allocates the buffer inside the GPU memory if not already done

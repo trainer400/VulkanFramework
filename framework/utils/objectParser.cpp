@@ -74,7 +74,19 @@ namespace framework
     {
         std::vector<float> vertices;
         std::vector<uint32_t> indices;
+        std::vector<VertexAttributes::DrawableAttribute> vertexAttributes;
         bool has_transparency = false;
+
+        // Add the vertex attributes depending on the config file
+        vertexAttributes.push_back(VertexAttributes::DrawableAttribute::F3); // XYZ coordinates
+        if (config.hasTexture)
+            vertexAttributes.push_back(VertexAttributes::DrawableAttribute::F2); // UV coordinates
+        if (config.hasNormals)
+            vertexAttributes.push_back(VertexAttributes::DrawableAttribute::F3); // Normals
+        if (config.addMedians)
+            vertexAttributes.push_back(VertexAttributes::DrawableAttribute::F3); // Medians added by user
+        if (config.hasTexture)
+            vertexAttributes.push_back(VertexAttributes::DrawableAttribute::F1); // In case of multiple textures, include the texture index
 
         for (size_t i = 0; i < shape.mesh.indices.size(); i++)
         {
@@ -114,7 +126,7 @@ namespace framework
                 vertices.push_back(med[1]);
                 vertices.push_back(med[2]);
             }
-            
+
             uint32_t material_index = shape.mesh.material_ids[i / 3];
 
             // Insert the material index inside the vertex (/3 because it is the same for every vertex in the same triangle)
@@ -137,10 +149,10 @@ namespace framework
         }
 
         // Create the result drawable object
-        return std::make_shared<DefaultDrawableElement>(vertices, indices, has_transparency);
+        return std::make_shared<DefaultDrawableElement>(vertices, vertexAttributes, indices, has_transparency);
     }
 
-    std::vector<std::shared_ptr<DefaultDrawableElement>> parseObjFile(const char *filename, const ObjectParserConfiguration &config, std::vector<std::string>& tex_paths)
+    std::vector<std::shared_ptr<DefaultDrawableElement>> parseObjFile(const char *filename, const ObjectParserConfiguration &config, std::vector<std::string> &tex_paths)
     {
         if (filename == nullptr)
             throw runtime_error("[ObjectParser] Null filename");
@@ -165,7 +177,7 @@ namespace framework
             throw std::runtime_error("[ObjectParser] Error from tiny-OBJ: " + warn + err);
 
         // The last +1 is for the material index (TODO use uint for material index)
-        uint32_t vertex_size = 3 + (config.hasTexture ? 2 : 0) + (config.hasNormals ? 3 : 0) + (config.addMedians ? 3 : 0) + 1;
+        uint32_t vertex_size = 3 + (config.hasTexture ? 2 : 0) + (config.hasNormals ? 3 : 0) + (config.addMedians ? 3 : 0) + (config.hasTexture ? 1 : 0);
 
         // Get all the texture paths
         tex_paths = getTexturePaths(mtl_file_folder, materials);

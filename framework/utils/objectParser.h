@@ -6,6 +6,7 @@
 #include <memory>
 
 #include <core/drawableElement.h>
+#include <core/vertexAttributes.h>
 
 namespace framework
 {

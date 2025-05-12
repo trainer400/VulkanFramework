@@ -8,6 +8,7 @@
 #include <core/shader.h>
 #include <core/descriptorSet.h>
 #include <core/commandBuffer.h>
+#include <core/vertexAttributes.h>
 #include <devices/logicalDevice.h>
 #include <devices/physicalDevice.h>
 
@@ -91,7 +92,7 @@ namespace framework
         std::unique_ptr<DescriptorSet> descriptorSet;
 
         // Attributes list for single vertex
-        std::vector<DrawableAttribute> attributes;
+        std::unique_ptr<VertexAttributes> attributes;
 
         // List of drawable elements
         std::vector<std::shared_ptr<DrawableElement>> elements;

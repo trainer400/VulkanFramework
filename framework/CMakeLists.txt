@@ -17,6 +17,7 @@ set(FRAMEWORK_CORE
     core/vulkan.cpp
     core/semaphore.cpp
     core/fence.cpp
+    core/vertexAttributes.cpp
 )
 
 set(FRAMEWORK_DEVICES

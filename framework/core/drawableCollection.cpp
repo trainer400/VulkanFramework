@@ -91,6 +91,18 @@ namespace framework
 
         if (!allocated)
         {
+            // In case of empty vertex attributes, use the ones with the new element
+            if (elements.size() == 0)
+            {
+                attributes = std::make_unique<VertexAttributes>(element->getVertexAttributes());
+            }
+
+            // Check that the new element has the same vertex attributes of the other ones in the collection
+            if (!(*attributes.get() == element->getVertexAttributes()))
+            {
+                throw std::runtime_error("[DrawableCollection] New element vertex attributes differ from exsiting elements inside the collection");
+            }
+
             elements.push_back(element);
 
             // Increase the counters
@@ -103,23 +115,16 @@ namespace framework
         }
     }
 
-    void DrawableCollection::addAttribute(DrawableAttribute attribute)
-    {
-        if (!allocated)
-        {
-            attributes.push_back(attribute);
-        }
-        else
-        {
-            throw std::runtime_error("[DrawableCollection] Buffer already allocated");
-        }
-    }
-
     void DrawableCollection::allocate()
     {
         if (allocated)
         {
             throw std::runtime_error("[DrawableCollection] The buffer has already been allocated");
+        }
+
+        if (elements.size() == 0)
+        {
+            throw std::runtime_error("[DrawableCollection] Allocate function called but empty element list");
         }
 
         // Set the allocated flag
@@ -283,28 +288,28 @@ namespace framework
         if (allocated)
         {
             uint32_t offset = 0;
-            for (int i = 0; i < attributes.size(); i++)
+            for (int i = 0; i < attributes->getVertexAttributes().size(); i++)
             {
                 VkVertexInputAttributeDescription description{};
 
                 description.binding = 0;
                 description.location = i;
-                description.format = static_cast<VkFormat>(attributes[i]);
+                description.format = static_cast<VkFormat>(attributes->getVertexAttributes()[i]);
                 description.offset = offset;
 
                 // Update the offset
-                switch (attributes[i])
+                switch (attributes->getVertexAttributes()[i])
                 {
-                case F1:
+                case VertexAttributes::DrawableAttribute::F1:
                     offset += 1 * sizeof(float);
                     break;
-                case F2:
+                case VertexAttributes::DrawableAttribute::F2:
                     offset += 2 * sizeof(float);
                     break;
-                case F3:
+                case VertexAttributes::DrawableAttribute::F3:
                     offset += 3 * sizeof(float);
                     break;
-                case F4:
+                case VertexAttributes::DrawableAttribute::F4:
                     offset += 4 * sizeof(float);
                     break;
                 }
@@ -320,20 +325,20 @@ namespace framework
     int DrawableCollection::getAttributesSum()
     {
         int sizeOfStruct = 0;
-        for (int i = 0; i < attributes.size(); i++)
+        for (int i = 0; i < attributes->getVertexAttributes().size(); i++)
         {
-            switch (attributes[i])
+            switch (attributes->getVertexAttributes()[i])
             {
-            case F1:
+            case VertexAttributes::DrawableAttribute::F1:
                 sizeOfStruct += 1;
                 break;
-            case F2:
+            case VertexAttributes::DrawableAttribute::F2:
                 sizeOfStruct += 2;
                 break;
-            case F3:
+            case VertexAttributes::DrawableAttribute::F3:
                 sizeOfStruct += 3;
                 break;
-            case F4:
+            case VertexAttributes::DrawableAttribute::F4:
                 sizeOfStruct += 4;
                 break;
             }

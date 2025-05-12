@@ -10,6 +10,7 @@ namespace framework
     {
     public:
         /**
+         * uint32: VK_FORMAT_R32_UINT
          * float: VK_FORMAT_R32_SFLOAT
          * vec2: VK_FORMAT_R32G32_SFLOAT
          * vec3: VK_FORMAT_R32G32B32_SFLOAT
@@ -20,7 +21,8 @@ namespace framework
             F1 = VK_FORMAT_R32_SFLOAT,
             F2 = VK_FORMAT_R32G32_SFLOAT,
             F3 = VK_FORMAT_R32G32B32_SFLOAT,
-            F4 = VK_FORMAT_R32G32B32A32_SFLOAT
+            F4 = VK_FORMAT_R32G32B32A32_SFLOAT,
+            I1 = VK_FORMAT_R32_UINT
         };
 
         VertexAttributes(const std::vector<DrawableAttribute> &vertexAttributes) : attributes(vertexAttributes) {}

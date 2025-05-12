@@ -86,7 +86,17 @@ namespace framework
         if (config.addMedians)
             vertexAttributes.push_back(VertexAttributes::DrawableAttribute::F3); // Medians added by user
         if (config.hasTexture)
-            vertexAttributes.push_back(VertexAttributes::DrawableAttribute::F1); // In case of multiple textures, include the texture index
+            vertexAttributes.push_back(VertexAttributes::DrawableAttribute::I1); // In case of multiple textures, include the texture index
+
+        // Check the object transparency
+        for (size_t i = 0; i < shape.mesh.indices.size(); i++)
+        {
+            uint32_t material_index = shape.mesh.material_ids[i / 3];
+            // Check if the object has transparency
+            if (materials[material_index].alpha_texname != "" || materials[material_index].dissolve < 1)
+                has_transparency = true;
+                break;
+        }
 
         for (size_t i = 0; i < shape.mesh.indices.size(); i++)
         {
@@ -127,10 +137,11 @@ namespace framework
                 vertices.push_back(med[2]);
             }
 
-            uint32_t material_index = shape.mesh.material_ids[i / 3];
+            uint16_t material_index = shape.mesh.material_ids[i / 3];
+            uint32_t material_data = (has_transparency ? 0x1 << 31 : 0x0) | material_index; 
 
             // Insert the material index inside the vertex (/3 because it is the same for every vertex in the same triangle)
-            vertices.push_back(material_index);
+            vertices.push_back(*reinterpret_cast<float*>(&material_data));
 
             // Insert the index
             indices.push_back((vertices.size() / vertex_size) - 1);
@@ -142,10 +153,6 @@ namespace framework
                 indices[indices.size() - 1] = indices[indices.size() - 2];
                 indices[indices.size() - 2] = temp;
             }
-
-            // Check if the object has transparency
-            if (materials[material_index].alpha_texname != "" || materials[material_index].dissolve < 1)
-                has_transparency = true;
         }
 
         // Create the result drawable object

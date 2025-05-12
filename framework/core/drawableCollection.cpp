@@ -301,6 +301,7 @@ namespace framework
                 switch (attributes->getVertexAttributes()[i])
                 {
                 case VertexAttributes::DrawableAttribute::F1:
+                case VertexAttributes::DrawableAttribute::I1:
                     offset += 1 * sizeof(float);
                     break;
                 case VertexAttributes::DrawableAttribute::F2:
@@ -330,6 +331,7 @@ namespace framework
             switch (attributes->getVertexAttributes()[i])
             {
             case VertexAttributes::DrawableAttribute::F1:
+            case VertexAttributes::DrawableAttribute::I1:
                 sizeOfStruct += 1;
                 break;
             case VertexAttributes::DrawableAttribute::F2:

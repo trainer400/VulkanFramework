@@ -90,6 +90,9 @@ public:
         indices.push_back(3 + 20); indices.push_back(2 + 20); indices.push_back(1 + 20); // Second triangle
 
         // clang-format on
+
+        this->vertexAttributes.push_back(VertexAttributes::DrawableAttribute::F3);
+        this->vertexAttributes.push_back(VertexAttributes::DrawableAttribute::F3);
     }
 
     void update() override
@@ -122,8 +125,6 @@ void createGraphicsObjects()
     // Create the drawable collection
     unique_ptr<DrawableCollection> cubeCollection = make_unique<DrawableCollection>(lDevice, move(descriptor), commandPool->getCommandPool(), shaders);
     cubeCollection->addElement(make_shared<Cube>());
-    cubeCollection->addAttribute(DrawableAttribute::F3);
-    cubeCollection->addAttribute(DrawableAttribute::F3);
     cubeCollection->allocate();
 
     // Create the pipeline

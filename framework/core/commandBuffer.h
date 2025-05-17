@@ -14,7 +14,7 @@ namespace framework
     class CommandBuffer
     {
     public:
-        CommandBuffer(const std::shared_ptr<LogicalDevice> &lDevice, const VkCommandPool &pool);
+        CommandBuffer(const std::shared_ptr<LogicalDevice> &l_device, const VkCommandPool &pool);
 
         /**
          * @brief Starts the recording of commands to store into the command buffer
@@ -30,7 +30,7 @@ namespace framework
         const VkCommandBuffer &getCommandBuffer() { return buffer; }
 
     private:
-        std::shared_ptr<LogicalDevice> lDevice;
+        std::shared_ptr<LogicalDevice> l_device;
 
         VkCommandBuffer buffer = VK_NULL_HANDLE;
     };

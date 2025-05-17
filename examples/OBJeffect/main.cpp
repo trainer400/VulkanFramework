@@ -79,11 +79,6 @@ void createGraphicsObjects()
     // Add the drawable elements
     for (auto &e : drawable_elements)
         cubeCollection->addElement(e);
-    cubeCollection->addAttribute(DrawableAttribute::F3);
-    cubeCollection->addAttribute(DrawableAttribute::F2);
-    cubeCollection->addAttribute(DrawableAttribute::F3);
-    cubeCollection->addAttribute(DrawableAttribute::F3);
-    cubeCollection->addAttribute(DrawableAttribute::F1);
     cubeCollection->allocate();
 
     // Create the pipeline

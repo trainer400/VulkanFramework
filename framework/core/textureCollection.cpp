@@ -11,8 +11,8 @@
 
 namespace framework
 {
-    TextureCollection::TextureCollection(const std::shared_ptr<LogicalDevice> &lDevice, const VkCommandPool &pool, const std::vector<std::string> &filenames, uint32_t bindingIndex)
-        : DescriptorElement(bindingIndex)
+    TextureCollection::TextureCollection(const std::shared_ptr<LogicalDevice> &lDevice, const VkCommandPool &pool, const std::vector<std::string> &filenames, uint32_t binding_index)
+        : DescriptorElement(binding_index)
     {
         if (lDevice == nullptr)
         {
@@ -148,7 +148,7 @@ namespace framework
     {
         VkDescriptorSetLayoutBinding layoutBinding{};
 
-        layoutBinding.binding = bindingIndex;
+        layoutBinding.binding = binding_index;
         layoutBinding.descriptorCount = textures.size();
         layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
         layoutBinding.pImmutableSamplers = nullptr;
@@ -172,7 +172,7 @@ namespace framework
         VkWriteDescriptorSet writeDescriptor{};
 
         writeDescriptor.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        writeDescriptor.dstBinding = bindingIndex;
+        writeDescriptor.dstBinding = binding_index;
         writeDescriptor.dstArrayElement = 0;
         writeDescriptor.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
         writeDescriptor.descriptorCount = textures.size();

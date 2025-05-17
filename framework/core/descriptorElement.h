@@ -9,7 +9,7 @@ namespace framework
     class DescriptorElement
     {
     public:
-        DescriptorElement(uint32_t bindingIndex) : bindingIndex(bindingIndex) {}
+        DescriptorElement(uint32_t binding_index) : binding_index(binding_index) {}
 
         // Getters
         virtual const VkDescriptorSetLayoutBinding getDescriptorSetLayoutBinding() = 0;
@@ -17,6 +17,6 @@ namespace framework
         virtual const VkWriteDescriptorSet getWriteDescriptorSet() = 0;
 
     protected:
-        uint32_t bindingIndex;
+        uint32_t binding_index;
     };
 }

@@ -11,28 +11,28 @@ namespace framework
         /**
          * @brief Construct a new Fence object
          *
-         * @param lDevice The logical device
+         * @param l_device The logical device
          * @param signaled Whether the fence starts as signaled or not
          */
-        Fence(std::shared_ptr<LogicalDevice> lDevice, bool signaled);
+        Fence(std::shared_ptr<LogicalDevice> l_device, bool signaled);
         ~Fence();
 
         /**
          * @brief Waits for fence to be triggered
          */
-        inline void waitFor(uint32_t fenceCount) { vkWaitForFences(lDevice->getDevice(), fenceCount, &fence, VK_TRUE, UINT64_MAX); }
+        inline void waitFor(uint32_t fence_count) { vkWaitForFences(l_device->getDevice(), fence_count, &fence, VK_TRUE, UINT64_MAX); }
 
         /**
          * @brief Resets the status of the fence
          */
-        inline void reset(uint32_t fenceCount) { vkResetFences(lDevice->getDevice(), fenceCount, &fence); }
+        inline void reset(uint32_t fence_count) { vkResetFences(l_device->getDevice(), fence_count, &fence); }
 
         // Getters
         inline const VkFence &getFence() { return fence; }
 
     private:
         // Framework objects
-        std::shared_ptr<LogicalDevice> lDevice;
+        std::shared_ptr<LogicalDevice> l_device;
 
         // Vulkan objects
         VkFence fence;

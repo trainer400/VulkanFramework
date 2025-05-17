@@ -3,26 +3,26 @@
 
 namespace framework
 {
-    CommandPool::CommandPool(const std::shared_ptr<LogicalDevice> &lDevice, const VkSurfaceKHR &surface)
+    CommandPool::CommandPool(const std::shared_ptr<LogicalDevice> &l_device, const VkSurfaceKHR &surface)
     {
-        if (lDevice == nullptr)
+        if (l_device == nullptr)
         {
             throw std::runtime_error("[CommandPool] Logical device instance null");
         }
 
-        this->lDevice = lDevice;
+        this->l_device = l_device;
 
         // Retrieve the queue families
-        QueueFamilyIndices indices = lDevice->findQueueFamilies(surface);
+        QueueFamilyIndices indices = l_device->findQueueFamilies(surface);
 
         // Create the command pool
-        VkCommandPoolCreateInfo poolInfo{};
+        VkCommandPoolCreateInfo pool_info{};
 
-        poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-        poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-        poolInfo.queueFamilyIndex = indices.graphicsFamily.value();
+        pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+        pool_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+        pool_info.queueFamilyIndex = indices.graphicsFamily.value();
 
-        if (vkCreateCommandPool(lDevice->getDevice(), &poolInfo, nullptr, &pool) != VK_SUCCESS)
+        if (vkCreateCommandPool(l_device->getDevice(), &pool_info, nullptr, &pool) != VK_SUCCESS)
         {
             throw std::runtime_error("[CommandBuffer] Error creating the command pool");
         }
@@ -32,7 +32,7 @@ namespace framework
     {
         if (pool != VK_NULL_HANDLE)
         {
-            vkDestroyCommandPool(lDevice->getDevice(), pool, nullptr);
+            vkDestroyCommandPool(l_device->getDevice(), pool, nullptr);
         }
     }
 }

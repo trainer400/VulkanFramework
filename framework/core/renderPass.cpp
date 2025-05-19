@@ -3,14 +3,14 @@
 
 namespace framework
 {
-    RenderPass::RenderPass(const std::shared_ptr<LogicalDevice> &lDevice, const VkExtent2D &extent, const VkSurfaceFormatKHR &format, DepthTestType depth)
+    RenderPass::RenderPass(const std::shared_ptr<LogicalDevice> &l_device, const VkExtent2D &extent, const VkSurfaceFormatKHR &format, DepthTestType depth)
     {
-        if (lDevice == nullptr)
+        if (l_device == nullptr)
         {
             throw std::runtime_error("[RenderPass] Null device instance");
         }
 
-        this->lDevice = lDevice;
+        this->l_device = l_device;
         this->depth = depth;
 
         createRenderPass(extent, format);
@@ -24,8 +24,8 @@ namespace framework
     void RenderPass::createRenderPass(const VkExtent2D &extent, const VkSurfaceFormatKHR &format)
     {
         // Structs to be used in case of a depth buffer active
-        VkAttachmentDescription depthAttachment{};
-        VkAttachmentReference depthAttachmentRef{};
+        VkAttachmentDescription depth_attachment{};
+        VkAttachmentReference depth_attachment_ref{};
 
         // Depth buffer
         if (depth != NONE)
@@ -40,54 +40,54 @@ namespace framework
             // Create the depth buffer image
             createImage(extent.width, extent.height,
                         depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
-                        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, depthImage, depthImageMemory);
+                        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, depth_image, depth_image_memory);
 
-            createImageView(depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, depthImageView);
+            createImageView(depth_image, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, depth_image_view);
 
             // Populate the attachment
-            depthAttachment.format = depthFormat;
-            depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-            depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-            depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-            depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+            depth_attachment.format = depthFormat;
+            depth_attachment.samples = VK_SAMPLE_COUNT_1_BIT;
+            depth_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+            depth_attachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            depth_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            depth_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            depth_attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            depth_attachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
         }
 
-        VkAttachmentDescription colorAttachment{};
+        VkAttachmentDescription color_attachment{};
 
-        colorAttachment.format = format.format;
-        colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+        color_attachment.format = format.format;
+        color_attachment.samples = VK_SAMPLE_COUNT_1_BIT;
 
         // The frame buffer is going to be cleared before a drawing operation
-        colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        color_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        color_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 
         // Don't care for stencils
-        colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-        colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        color_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        color_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 
         // The images are presented for a swap chain
-        colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+        color_attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        color_attachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
         // Setup subpass
-        VkAttachmentReference colorAttachmentRef{};
+        VkAttachmentReference color_attachment_ref{};
 
-        colorAttachmentRef.attachment = 0;
-        colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        color_attachment_ref.attachment = 0;
+        color_attachment_ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
         VkSubpassDescription subpass{};
         subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
         subpass.colorAttachmentCount = 1;
-        subpass.pColorAttachments = &colorAttachmentRef;
+        subpass.pColorAttachments = &color_attachment_ref;
 
         if (depth != NONE)
         {
-            depthAttachmentRef.attachment = 1;
-            depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-            subpass.pDepthStencilAttachment = &depthAttachmentRef;
+            depth_attachment_ref.attachment = 1;
+            depth_attachment_ref.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+            subpass.pDepthStencilAttachment = &depth_attachment_ref;
         }
 
         // Create the subpass dependency
@@ -110,24 +110,24 @@ namespace framework
 
         // Create the vector with the attachments
         std::vector<VkAttachmentDescription> attachments;
-        attachments.push_back(colorAttachment);
+        attachments.push_back(color_attachment);
 
         if (depth != NONE)
         {
-            attachments.push_back(depthAttachment);
+            attachments.push_back(depth_attachment);
         }
 
         // Create the renderpass
-        VkRenderPassCreateInfo createInfo{};
-        createInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-        createInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
-        createInfo.pAttachments = attachments.data();
-        createInfo.subpassCount = 1;
-        createInfo.pSubpasses = &subpass;
-        createInfo.dependencyCount = 1;
-        createInfo.pDependencies = &dependency;
+        VkRenderPassCreateInfo create_info{};
+        create_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+        create_info.attachmentCount = static_cast<uint32_t>(attachments.size());
+        create_info.pAttachments = attachments.data();
+        create_info.subpassCount = 1;
+        create_info.pSubpasses = &subpass;
+        create_info.dependencyCount = 1;
+        create_info.pDependencies = &dependency;
 
-        if (vkCreateRenderPass(lDevice->getDevice(), &createInfo, nullptr, &renderPass) != VK_SUCCESS)
+        if (vkCreateRenderPass(l_device->getDevice(), &create_info, nullptr, &render_pass) != VK_SUCCESS)
         {
             throw std::runtime_error("[RenderPass] Impossible to create render pass instance");
         }
@@ -138,25 +138,25 @@ namespace framework
         // Destroy the depth buffer
         if (depth != NONE)
         {
-            if (depthImageView != VK_NULL_HANDLE)
+            if (depth_image_view != VK_NULL_HANDLE)
             {
-                vkDestroyImageView(lDevice->getDevice(), depthImageView, nullptr);
+                vkDestroyImageView(l_device->getDevice(), depth_image_view, nullptr);
             }
 
-            if (depthImage != VK_NULL_HANDLE)
+            if (depth_image != VK_NULL_HANDLE)
             {
-                vkDestroyImage(lDevice->getDevice(), depthImage, nullptr);
+                vkDestroyImage(l_device->getDevice(), depth_image, nullptr);
             }
 
-            if (depthImageMemory != VK_NULL_HANDLE)
+            if (depth_image_memory != VK_NULL_HANDLE)
             {
-                vkFreeMemory(lDevice->getDevice(), depthImageMemory, nullptr);
+                vkFreeMemory(l_device->getDevice(), depth_image_memory, nullptr);
             }
         }
 
-        if (renderPass != VK_NULL_HANDLE)
+        if (render_pass != VK_NULL_HANDLE)
         {
-            vkDestroyRenderPass(lDevice->getDevice(), renderPass, nullptr);
+            vkDestroyRenderPass(l_device->getDevice(), render_pass, nullptr);
         }
     }
 
@@ -169,39 +169,39 @@ namespace framework
         createRenderPass(extent, format);
     }
 
-    void RenderPass::begin(const VkCommandBuffer &cmdBuffer, const VkFramebuffer &frameBuffer, const VkExtent2D &extent, const VkClearValue &clearColor)
+    void RenderPass::begin(const VkCommandBuffer &cmd_buffer, const VkFramebuffer &frame_buffer, const VkExtent2D &extent, const VkClearValue &clear_color)
     {
         // Start the render pass
-        VkRenderPassBeginInfo renderPassInfo{};
+        VkRenderPassBeginInfo render_pass_info{};
 
-        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        renderPassInfo.renderPass = renderPass;
-        renderPassInfo.framebuffer = frameBuffer;
-        renderPassInfo.renderArea.offset = {0, 0};
-        renderPassInfo.renderArea.extent = extent;
+        render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        render_pass_info.renderPass = render_pass;
+        render_pass_info.framebuffer = frame_buffer;
+        render_pass_info.renderArea.offset = {0, 0};
+        render_pass_info.renderArea.extent = extent;
 
         // Add the user specified clear color
-        std::vector<VkClearValue> clearValues;
-        clearValues.push_back(clearColor);
-        clearValues.push_back({1.0f, 0.0f}); // Depth and stencil
+        std::vector<VkClearValue> clear_values;
+        clear_values.push_back(clear_color);
+        clear_values.push_back({1.0f, 0.0f}); // Depth and stencil
 
-        renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
-        renderPassInfo.pClearValues = clearValues.data();
+        render_pass_info.clearValueCount = static_cast<uint32_t>(clear_values.size());
+        render_pass_info.pClearValues = clear_values.data();
 
-        vkCmdBeginRenderPass(cmdBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+        vkCmdBeginRenderPass(cmd_buffer, &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
     }
 
-    void RenderPass::end(const VkCommandBuffer &cmdBuffer)
+    void RenderPass::end(const VkCommandBuffer &cmd_buffer)
     {
         // End the render pass
-        vkCmdEndRenderPass(cmdBuffer);
+        vkCmdEndRenderPass(cmd_buffer);
     }
 
     void RenderPass::checkFormat(VkFormat format, VkImageTiling tiling, VkFormatFeatureFlags features)
     {
         // Enumerate the format properties
         VkFormatProperties props;
-        vkGetPhysicalDeviceFormatProperties(lDevice->getPhysicalDevice()->getDevice(), format, &props);
+        vkGetPhysicalDeviceFormatProperties(l_device->getPhysicalDevice()->getDevice(), format, &props);
 
         if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features)
         {
@@ -218,54 +218,54 @@ namespace framework
         throw std::runtime_error("[RenderPass] Failed to find supported format");
     }
 
-    void RenderPass::createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage &image, VkDeviceMemory &imageMemory)
+    void RenderPass::createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage &image, VkDeviceMemory &image_memory)
     {
-        VkImageCreateInfo imageInfo{};
-        imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-        imageInfo.imageType = VK_IMAGE_TYPE_2D;
-        imageInfo.extent.width = width;
-        imageInfo.extent.height = height;
-        imageInfo.extent.depth = 1;
-        imageInfo.mipLevels = 1;
-        imageInfo.arrayLayers = 1;
-        imageInfo.format = format;
-        imageInfo.tiling = tiling;
-        imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        imageInfo.usage = usage;
-        imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-        imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        VkImageCreateInfo image_info{};
+        image_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+        image_info.imageType = VK_IMAGE_TYPE_2D;
+        image_info.extent.width = width;
+        image_info.extent.height = height;
+        image_info.extent.depth = 1;
+        image_info.mipLevels = 1;
+        image_info.arrayLayers = 1;
+        image_info.format = format;
+        image_info.tiling = tiling;
+        image_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        image_info.usage = usage;
+        image_info.samples = VK_SAMPLE_COUNT_1_BIT;
+        image_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-        if (vkCreateImage(lDevice->getDevice(), &imageInfo, nullptr, &image) != VK_SUCCESS)
+        if (vkCreateImage(l_device->getDevice(), &image_info, nullptr, &image) != VK_SUCCESS)
         {
             throw std::runtime_error("[RenderPass] Failed to create image");
         }
 
-        VkMemoryRequirements memRequirements;
-        vkGetImageMemoryRequirements(lDevice->getDevice(), image, &memRequirements);
+        VkMemoryRequirements mem_requirements;
+        vkGetImageMemoryRequirements(l_device->getDevice(), image, &mem_requirements);
 
         VkMemoryAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-        allocInfo.allocationSize = memRequirements.size;
-        allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
+        allocInfo.allocationSize = mem_requirements.size;
+        allocInfo.memoryTypeIndex = findMemoryType(mem_requirements.memoryTypeBits, properties);
 
-        if (vkAllocateMemory(lDevice->getDevice(), &allocInfo, nullptr, &imageMemory) != VK_SUCCESS)
+        if (vkAllocateMemory(l_device->getDevice(), &allocInfo, nullptr, &image_memory) != VK_SUCCESS)
         {
             throw std::runtime_error("[RenderPass] Failed to allocate image memory");
         }
 
-        vkBindImageMemory(lDevice->getDevice(), image, imageMemory, 0);
+        vkBindImageMemory(l_device->getDevice(), image, image_memory, 0);
     }
 
-    uint32_t RenderPass::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
+    uint32_t RenderPass::findMemoryType(uint32_t type_filter, VkMemoryPropertyFlags properties)
     {
-        VkPhysicalDeviceMemoryProperties memProperties;
+        VkPhysicalDeviceMemoryProperties memory_properties;
 
         // Enumerate the memory properties
-        vkGetPhysicalDeviceMemoryProperties(lDevice->getPhysicalDevice()->getDevice(), &memProperties);
+        vkGetPhysicalDeviceMemoryProperties(l_device->getPhysicalDevice()->getDevice(), &memory_properties);
 
-        for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++)
+        for (uint32_t i = 0; i < memory_properties.memoryTypeCount; i++)
         {
-            if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties)
+            if ((type_filter & (1 << i)) && (memory_properties.memoryTypes[i].propertyFlags & properties) == properties)
             {
                 return i;
             }
@@ -274,28 +274,28 @@ namespace framework
         throw std::runtime_error("[RenderPass] Unable to find a suitable memory type");
     }
 
-    void RenderPass::createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, VkImageView &view)
+    void RenderPass::createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspect_flags, VkImageView &view)
     {
-        VkImageViewCreateInfo createInfo{};
+        VkImageViewCreateInfo create_info{};
 
-        createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-        createInfo.image = image;
-        createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-        createInfo.format = format;
+        create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+        create_info.image = image;
+        create_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
+        create_info.format = format;
 
-        createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-        createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-        createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-        createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+        create_info.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+        create_info.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+        create_info.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+        create_info.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
 
         // No mipmap level nor multiple layers
-        createInfo.subresourceRange.aspectMask = aspectFlags;
-        createInfo.subresourceRange.baseMipLevel = 0;
-        createInfo.subresourceRange.levelCount = 1;
-        createInfo.subresourceRange.baseArrayLayer = 0;
-        createInfo.subresourceRange.layerCount = 1;
+        create_info.subresourceRange.aspectMask = aspect_flags;
+        create_info.subresourceRange.baseMipLevel = 0;
+        create_info.subresourceRange.levelCount = 1;
+        create_info.subresourceRange.baseArrayLayer = 0;
+        create_info.subresourceRange.layerCount = 1;
 
-        if (vkCreateImageView(lDevice->getDevice(), &createInfo, nullptr, &view) != VK_SUCCESS)
+        if (vkCreateImageView(l_device->getDevice(), &create_info, nullptr, &view) != VK_SUCCESS)
         {
             throw std::runtime_error("[RenderPass] Error creating the image views");
         }

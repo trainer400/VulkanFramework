@@ -15,8 +15,8 @@ namespace framework
     struct SwapChainConfiguration
     {
         VkFormat format = VK_FORMAT_B8G8R8A8_SRGB;
-        VkColorSpaceKHR colorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
-        VkPresentModeKHR presentMode = VK_PRESENT_MODE_MAILBOX_KHR;
+        VkColorSpaceKHR color_space = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+        VkPresentModeKHR present_mode = VK_PRESENT_MODE_MAILBOX_KHR;
     };
 
     class SwapChain
@@ -25,7 +25,7 @@ namespace framework
         /**
          * @brief Construct a new Swap Chain object
          */
-        SwapChain(const std::shared_ptr<LogicalDevice> &lDevice, const std::shared_ptr<Window> &window, const VkSurfaceKHR &surface, const SwapChainConfiguration &config);
+        SwapChain(const std::shared_ptr<LogicalDevice> &l_device, const std::shared_ptr<Window> &window, const VkSurfaceKHR &surface, const SwapChainConfiguration &config);
         ~SwapChain();
 
         /**
@@ -34,11 +34,11 @@ namespace framework
         void recreateSwapChain(const std::shared_ptr<Window> &window, const VkSurfaceKHR &surface);
 
         // Getters
-        const VkSwapchainKHR &getSwapChain() { return swapChain; }
+        const VkSwapchainKHR &getSwapChain() { return swap_chain; }
         const std::vector<VkImage> &getImages() { return images; }
-        const std::vector<VkImageView> &getImageViews() { return imageViews; }
-        const VkSurfaceFormatKHR &getFormat() { return surfaceFormat; }
-        const VkPresentModeKHR &getPresentMode() { return presentMode; }
+        const std::vector<VkImageView> &getImageViews() { return image_views; }
+        const VkSurfaceFormatKHR &getFormat() { return surface_format; }
+        const VkPresentModeKHR &getPresentMode() { return present_mode; }
         const VkExtent2D &getExtent() { return extent; }
 
     private:
@@ -60,32 +60,32 @@ namespace framework
         /**
          * @brief Chooses the best format among the supported ones from the physical device
          */
-        VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats);
+        VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &available_formats);
 
         /**
          * @brief Chooses the best present mode among the supported ones from the physical device.
          * It aims for VK_PRESENT_MODE_MAILBOX_KHR, which implements the commonly known "triple buffering" in vsync.
          * In case of a failure it selects the VK_PRESENT_MODE_FIFO_KHR, which is the common vsync.
          */
-        VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes);
+        VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &available_present_modes);
 
         /**
          * @brief Selects the maximum resolution available inside the created window
          */
         VkExtent2D chooseSwapContext(const VkSurfaceCapabilitiesKHR &capabilities, GLFWwindow *window);
 
-        VkSwapchainKHR swapChain = VK_NULL_HANDLE;
-        std::shared_ptr<LogicalDevice> lDevice;
-        SwapChainSupportDetails swapChainSupport;
+        VkSwapchainKHR swap_chain = VK_NULL_HANDLE;
+        std::shared_ptr<LogicalDevice> l_device;
+        SwapChainSupportDetails swap_chain_support;
         SwapChainConfiguration config;
 
         // Set of images and views
         std::vector<VkImage> images;
-        std::vector<VkImageView> imageViews;
+        std::vector<VkImageView> image_views;
 
         // Set of choosen parameters for swap chain
-        VkSurfaceFormatKHR surfaceFormat;
-        VkPresentModeKHR presentMode;
+        VkSurfaceFormatKHR surface_format;
+        VkPresentModeKHR present_mode;
         VkExtent2D extent;
     };
 }

@@ -9,7 +9,7 @@ namespace framework
     class Semaphore
     {
     public:
-        Semaphore(const std::shared_ptr<LogicalDevice> &lDevice);
+        Semaphore(const std::shared_ptr<LogicalDevice> &l_device);
         ~Semaphore();
 
         inline const VkSemaphore &getSemaphore() { return semaphore; }
@@ -18,6 +18,6 @@ namespace framework
         VkSemaphore semaphore;
 
         // Framework objects
-        std::shared_ptr<LogicalDevice> lDevice;
+        std::shared_ptr<LogicalDevice> l_device;
     };
 }

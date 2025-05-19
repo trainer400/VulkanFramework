@@ -4,20 +4,20 @@
 
 namespace framework
 {
-    Semaphore::Semaphore(const std::shared_ptr<LogicalDevice> &lDevice)
+    Semaphore::Semaphore(const std::shared_ptr<LogicalDevice> &l_device)
     {
-        if (lDevice == nullptr)
+        if (l_device == nullptr)
         {
             throw std::runtime_error("[Semaphore] Logical device has not been created yet");
         }
-        this->lDevice = lDevice;
+        this->l_device = l_device;
 
         // Specify the type
         VkSemaphoreCreateInfo info{};
         info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
         // Create vulkan object
-        if (vkCreateSemaphore(lDevice->getDevice(), &info, nullptr, &semaphore))
+        if (vkCreateSemaphore(l_device->getDevice(), &info, nullptr, &semaphore))
         {
             throw std::runtime_error("[Semaphore] Impossible to create semaphore object");
         }
@@ -25,9 +25,9 @@ namespace framework
 
     Semaphore::~Semaphore()
     {
-        if (lDevice != nullptr)
+        if (l_device != nullptr)
         {
-            vkDestroySemaphore(lDevice->getDevice(), semaphore, nullptr);
+            vkDestroySemaphore(l_device->getDevice(), semaphore, nullptr);
         }
     }
 }

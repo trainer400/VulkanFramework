@@ -3,38 +3,38 @@
 
 namespace framework
 {
-    Pipeline::Pipeline(const std::shared_ptr<LogicalDevice> &lDevice,
-                       std::unique_ptr<DrawableCollection> drawableCollection,
-                       const DepthTestType &depthTestType, const VkRenderPass &renderPass,
+    Pipeline::Pipeline(const std::shared_ptr<LogicalDevice> &l_device,
+                       std::unique_ptr<DrawableCollection> drawable_collection,
+                       const DepthTestType &depth_test_type, const VkRenderPass &render_pass,
                        const PipelineConfiguration &config)
     {
-        if (lDevice == nullptr)
+        if (l_device == nullptr)
         {
             throw std::runtime_error("[Pipeline] Null device instance");
         }
 
-        if (renderPass == nullptr)
+        if (render_pass == nullptr)
         {
             throw std::runtime_error("[Pipeline] Null render pass instance");
         }
 
-        if (drawableCollection == nullptr)
+        if (drawable_collection == nullptr)
         {
             throw std::runtime_error("[Pipeline] Null drawable collection");
         }
 
-        if (drawableCollection->getAttributeDescriptions().size() == 0)
+        if (drawable_collection->getAttributeDescriptions().size() == 0)
         {
             throw std::runtime_error("[Pipeline] Empty drawable collection");
         }
 
-        this->lDevice = lDevice;
-        this->collection = std::move(drawableCollection);
+        this->l_device = l_device;
+        this->collection = std::move(drawable_collection);
 
-        std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
+        std::vector<VkPipelineShaderStageCreateInfo> shader_stages;
 
         // In case of a depth buffer
-        VkPipelineDepthStencilStateCreateInfo depthStencil{};
+        VkPipelineDepthStencilStateCreateInfo depth_stencil{};
 
         // For every shader create its stage
         for (std::shared_ptr<Shader> shader : collection->getShaders())
@@ -48,45 +48,45 @@ namespace framework
             createInfo.pName = "main";
 
             // Push the created info into the structure
-            shaderStages.push_back(createInfo);
+            shader_stages.push_back(createInfo);
         }
 
         // Add the dynamic state (TODO make this configurable)
-        std::vector<VkDynamicState> dynamicStates = {
+        std::vector<VkDynamicState> dynamic_states = {
             VK_DYNAMIC_STATE_VIEWPORT,
             VK_DYNAMIC_STATE_SCISSOR};
 
-        VkPipelineDynamicStateCreateInfo dynamicState{};
+        VkPipelineDynamicStateCreateInfo dynamic_state{};
 
-        dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-        dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
-        dynamicState.pDynamicStates = dynamicStates.data();
+        dynamic_state.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+        dynamic_state.dynamicStateCount = static_cast<uint32_t>(dynamic_states.size());
+        dynamic_state.pDynamicStates = dynamic_states.data();
 
         // Vertex input buffer (TODO configure this to have a mutable vertex buffer)
-        VkPipelineVertexInputStateCreateInfo vertexInfo{};
+        VkPipelineVertexInputStateCreateInfo vertex_info{};
 
-        VkVertexInputBindingDescription bindingDescription = collection->getBindingDescription();
-        std::vector<VkVertexInputAttributeDescription> attributeDescription = collection->getAttributeDescriptions();
+        VkVertexInputBindingDescription binding_description = collection->getBindingDescription();
+        std::vector<VkVertexInputAttributeDescription> attribute_descriptions = collection->getAttributeDescriptions();
 
-        vertexInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-        vertexInfo.vertexBindingDescriptionCount = 1;
-        vertexInfo.pVertexBindingDescriptions = &bindingDescription;
-        vertexInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescription.size());
-        vertexInfo.pVertexAttributeDescriptions = attributeDescription.data();
+        vertex_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+        vertex_info.vertexBindingDescriptionCount = 1;
+        vertex_info.pVertexBindingDescriptions = &binding_description;
+        vertex_info.vertexAttributeDescriptionCount = static_cast<uint32_t>(attribute_descriptions.size());
+        vertex_info.pVertexAttributeDescriptions = attribute_descriptions.data();
 
         // Input assembly (TODO make this configurable)
-        VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
+        VkPipelineInputAssemblyStateCreateInfo input_assembly{};
 
-        inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-        inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-        inputAssembly.primitiveRestartEnable = VK_FALSE;
+        input_assembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+        input_assembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+        input_assembly.primitiveRestartEnable = VK_FALSE;
 
         // Viewport and scissors
-        VkPipelineViewportStateCreateInfo viewportState{};
+        VkPipelineViewportStateCreateInfo viewport_state{};
 
-        viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-        viewportState.viewportCount = 1;
-        viewportState.scissorCount = 1;
+        viewport_state.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+        viewport_state.viewportCount = 1;
+        viewport_state.scissorCount = 1;
 
         // Rasterizer (TODO make this configurable)
         VkPipelineRasterizationStateCreateInfo rasterizer{};
@@ -94,9 +94,9 @@ namespace framework
         rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
         rasterizer.depthClampEnable = VK_FALSE;
         rasterizer.rasterizerDiscardEnable = VK_FALSE;
-        rasterizer.polygonMode = config.polygonMode;
-        rasterizer.cullMode = config.cullMode;
-        rasterizer.frontFace = config.frontFace;
+        rasterizer.polygonMode = config.polygon_mode;
+        rasterizer.cullMode = config.cull_mode;
+        rasterizer.frontFace = config.front_face;
         rasterizer.depthBiasEnable = VK_FALSE;
         rasterizer.depthBiasConstantFactor = 0;
         rasterizer.depthBiasClamp = 0;
@@ -115,83 +115,83 @@ namespace framework
         multisampling.alphaToOneEnable = VK_FALSE;
 
         // Color blending (TODO evaluate to make this configurable)
-        VkPipelineColorBlendAttachmentState colorBlendAttachment{};
+        VkPipelineColorBlendAttachmentState color_blend_attachment{};
 
-        colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-        colorBlendAttachment.blendEnable = VK_TRUE;
-        colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-        colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-        colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
-        colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-        colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-        colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
+        color_blend_attachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+        color_blend_attachment.blendEnable = VK_TRUE;
+        color_blend_attachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+        color_blend_attachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+        color_blend_attachment.colorBlendOp = VK_BLEND_OP_ADD;
+        color_blend_attachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+        color_blend_attachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+        color_blend_attachment.alphaBlendOp = VK_BLEND_OP_ADD;
 
-        VkPipelineColorBlendStateCreateInfo colorBlending{};
+        VkPipelineColorBlendStateCreateInfo color_blending{};
 
-        colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-        colorBlending.logicOpEnable = VK_FALSE;
-        colorBlending.logicOp = VK_LOGIC_OP_COPY;
-        colorBlending.attachmentCount = 1;
-        colorBlending.pAttachments = &colorBlendAttachment;
-        colorBlending.blendConstants[0] = 0.0f;
-        colorBlending.blendConstants[1] = 0.0f;
-        colorBlending.blendConstants[2] = 0.0f;
-        colorBlending.blendConstants[3] = 0.0f;
+        color_blending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+        color_blending.logicOpEnable = VK_FALSE;
+        color_blending.logicOp = VK_LOGIC_OP_COPY;
+        color_blending.attachmentCount = 1;
+        color_blending.pAttachments = &color_blend_attachment;
+        color_blending.blendConstants[0] = 0.0f;
+        color_blending.blendConstants[1] = 0.0f;
+        color_blending.blendConstants[2] = 0.0f;
+        color_blending.blendConstants[3] = 0.0f;
 
         // Pipeline layout (aka Uniforms TODO make this configurable)
-        VkPipelineLayoutCreateInfo layoutInfo{};
+        VkPipelineLayoutCreateInfo layout_info{};
 
-        layoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        layoutInfo.setLayoutCount = 0;
-        layoutInfo.pSetLayouts = nullptr;
-        layoutInfo.pushConstantRangeCount = 0;
-        layoutInfo.pPushConstantRanges = nullptr;
+        layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+        layout_info.setLayoutCount = 0;
+        layout_info.pSetLayouts = nullptr;
+        layout_info.pushConstantRangeCount = 0;
+        layout_info.pPushConstantRanges = nullptr;
 
         if (collection->hasDescriptorSet())
         {
-            layoutInfo.setLayoutCount = 1;
-            layoutInfo.pSetLayouts = &collection->getDescriptorSetLayout();
+            layout_info.setLayoutCount = 1;
+            layout_info.pSetLayouts = &collection->getDescriptorSetLayout();
         }
 
-        if (vkCreatePipelineLayout(lDevice->getDevice(), &layoutInfo, nullptr, &layout) != VK_SUCCESS)
+        if (vkCreatePipelineLayout(l_device->getDevice(), &layout_info, nullptr, &layout) != VK_SUCCESS)
         {
             throw std::runtime_error("[Pipeline] Error creating pipeline layout");
         }
 
         // Create the pipeline
-        VkGraphicsPipelineCreateInfo pipelineInfo{};
+        VkGraphicsPipelineCreateInfo pipeline_info{};
 
-        pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-        pipelineInfo.stageCount = static_cast<uint32_t>(collection->getShaders().size());
-        pipelineInfo.pStages = shaderStages.data();
-        pipelineInfo.pVertexInputState = &vertexInfo;
-        pipelineInfo.pInputAssemblyState = &inputAssembly;
-        pipelineInfo.pViewportState = &viewportState;
-        pipelineInfo.pRasterizationState = &rasterizer;
-        pipelineInfo.pMultisampleState = &multisampling;
-        pipelineInfo.pDepthStencilState = nullptr;
-        pipelineInfo.pColorBlendState = &colorBlending;
-        pipelineInfo.pDynamicState = &dynamicState;
-        pipelineInfo.layout = layout;
-        pipelineInfo.renderPass = renderPass;
-        pipelineInfo.subpass = 0;
-        pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
-        pipelineInfo.basePipelineIndex = -1;
+        pipeline_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+        pipeline_info.stageCount = static_cast<uint32_t>(collection->getShaders().size());
+        pipeline_info.pStages = shader_stages.data();
+        pipeline_info.pVertexInputState = &vertex_info;
+        pipeline_info.pInputAssemblyState = &input_assembly;
+        pipeline_info.pViewportState = &viewport_state;
+        pipeline_info.pRasterizationState = &rasterizer;
+        pipeline_info.pMultisampleState = &multisampling;
+        pipeline_info.pDepthStencilState = nullptr;
+        pipeline_info.pColorBlendState = &color_blending;
+        pipeline_info.pDynamicState = &dynamic_state;
+        pipeline_info.layout = layout;
+        pipeline_info.renderPass = render_pass;
+        pipeline_info.subpass = 0;
+        pipeline_info.basePipelineHandle = VK_NULL_HANDLE;
+        pipeline_info.basePipelineIndex = -1;
 
         // Check if depth testing is enabled
-        if (depthTestType != NONE)
+        if (depth_test_type != NONE)
         {
-            depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-            depthStencil.depthTestEnable = VK_TRUE;
-            depthStencil.depthWriteEnable = VK_TRUE;
-            depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
-            depthStencil.depthBoundsTestEnable = VK_FALSE;
-            depthStencil.stencilTestEnable = VK_FALSE;
+            depth_stencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+            depth_stencil.depthTestEnable = VK_TRUE;
+            depth_stencil.depthWriteEnable = VK_TRUE;
+            depth_stencil.depthCompareOp = VK_COMPARE_OP_LESS;
+            depth_stencil.depthBoundsTestEnable = VK_FALSE;
+            depth_stencil.stencilTestEnable = VK_FALSE;
 
-            pipelineInfo.pDepthStencilState = &depthStencil;
+            pipeline_info.pDepthStencilState = &depth_stencil;
         }
 
-        if (vkCreateGraphicsPipelines(lDevice->getDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline) != VK_SUCCESS)
+        if (vkCreateGraphicsPipelines(l_device->getDevice(), VK_NULL_HANDLE, 1, &pipeline_info, nullptr, &pipeline) != VK_SUCCESS)
         {
             throw std::runtime_error("[Pipeline] Error creating the pipeline");
         }
@@ -201,12 +201,12 @@ namespace framework
     {
         if (layout != VK_NULL_HANDLE)
         {
-            vkDestroyPipelineLayout(lDevice->getDevice(), layout, nullptr);
+            vkDestroyPipelineLayout(l_device->getDevice(), layout, nullptr);
         }
 
         if (pipeline != VK_NULL_HANDLE)
         {
-            vkDestroyPipeline(lDevice->getDevice(), pipeline, nullptr);
+            vkDestroyPipeline(l_device->getDevice(), pipeline, nullptr);
         }
     }
 }

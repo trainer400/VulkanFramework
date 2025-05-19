@@ -91,8 +91,8 @@ public:
 
         // clang-format on
 
-        this->vertexAttributes.push_back(VertexAttributes::DrawableAttribute::F3);
-        this->vertexAttributes.push_back(VertexAttributes::DrawableAttribute::F3);
+        this->vertex_attributes.push_back(VertexAttributes::DrawableAttribute::F3);
+        this->vertex_attributes.push_back(VertexAttributes::DrawableAttribute::F3);
     }
 
     void update() override

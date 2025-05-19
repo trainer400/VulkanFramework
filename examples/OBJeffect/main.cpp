@@ -83,7 +83,7 @@ void createGraphicsObjects()
 
     // Create the pipeline
     PipelineConfiguration config{};
-    config.cullMode = VK_CULL_MODE_NONE;
+    config.cull_mode = VK_CULL_MODE_NONE;
     objPipeline = make_shared<Pipeline>(lDevice, move(cubeCollection), renderPass->getDepthTestType(), renderPass->getRenderPass(), config);
 
     // Add the pipeline to the renderer

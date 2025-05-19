@@ -15,17 +15,17 @@ namespace framework
     // TODO expand this struct
     struct PipelineConfiguration
     {
-        VkPolygonMode polygonMode = VK_POLYGON_MODE_FILL;
-        VkCullModeFlagBits cullMode = VK_CULL_MODE_BACK_BIT;
-        VkFrontFace frontFace = VK_FRONT_FACE_CLOCKWISE;
+        VkPolygonMode polygon_mode = VK_POLYGON_MODE_FILL;
+        VkCullModeFlagBits cull_mode = VK_CULL_MODE_BACK_BIT;
+        VkFrontFace front_face = VK_FRONT_FACE_CLOCKWISE;
     };
 
     class Pipeline
     {
     public:
-        Pipeline(const std::shared_ptr<LogicalDevice> &lDevice,
-                 std::unique_ptr<DrawableCollection> drawableCollection,
-                 const DepthTestType &depthTestType, const VkRenderPass &renderPass,
+        Pipeline(const std::shared_ptr<LogicalDevice> &l_device,
+                 std::unique_ptr<DrawableCollection> drawable_collection,
+                 const DepthTestType &depth_test_type, const VkRenderPass &render_pass,
                  const PipelineConfiguration &config);
         ~Pipeline();
 
@@ -55,7 +55,7 @@ namespace framework
         VkPipeline pipeline = VK_NULL_HANDLE;
         VkPipelineLayout layout = VK_NULL_HANDLE;
 
-        std::shared_ptr<LogicalDevice> lDevice;
+        std::shared_ptr<LogicalDevice> l_device;
         std::unique_ptr<DrawableCollection> collection;
     };
 }

@@ -26,12 +26,12 @@ namespace framework
 {
     struct TimingMeasurement
     {
-        float timeToDraw = 0;
-        float timeToWaitFence = 0;
-        float timeToUpdatePipelines = 0;
-        float timeToAcquireImage = 0;
-        float timeToDescribeGui = 0;
-        float timeToRecordCommandBuffer = 0;
+        float time_to_draw = 0;
+        float time_to_wait_fence = 0;
+        float time_to_update_pipelines = 0;
+        float time_to_acquire_image = 0;
+        float time_to_describe_gui = 0;
+        float time_to_record_command_buffer = 0;
     };
 
     class DefaultRenderer
@@ -85,17 +85,17 @@ namespace framework
         /**
          * @brief Records the command into the command buffer. The index is the swap chain used one
          */
-        void recordCommandBuffer(uint32_t index, VkClearValue clearColor);
+        void recordCommandBuffer(uint32_t index, VkClearValue clear_color);
 
         /**
          * @brief Call to the command buffer to draw on screen the previously specified objects
          */
-        VkResult draw(VkClearValue clearColor);
+        VkResult draw(VkClearValue clear_color);
 
         /**
          * @brief Setups ImGui with the needed vulkan instances
          */
-        void setupImGui(GLFWwindow *window, std::function<void()> guiDescriptor);
+        void setupImGui(GLFWwindow *window, std::function<void()> gui_descriptor);
 
         /**
          * @brief Called after an invalidation of the swap-chain (usually occurs after a resize).
@@ -109,23 +109,23 @@ namespace framework
     private:
         // Framework objects
         std::shared_ptr<Vulkan> vulkan;
-        std::shared_ptr<LogicalDevice> lDevice;
+        std::shared_ptr<LogicalDevice> l_device;
         std::unique_ptr<WindowSurface> surface;
-        std::unique_ptr<SwapChain> swapChain;
-        std::unique_ptr<RenderPass> renderPass;
+        std::unique_ptr<SwapChain> swap_chain;
+        std::unique_ptr<RenderPass> render_pass;
         std::vector<std::shared_ptr<Pipeline>> pipelines;
-        std::unique_ptr<FrameBufferCollection> frameBufferCollection;
-        std::unique_ptr<CommandBuffer> commandBuffer;
-        std::unique_ptr<Semaphore> imageAvailable;
-        std::unique_ptr<Semaphore> renderFinished;
-        std::unique_ptr<Fence> inFlight;
+        std::unique_ptr<FrameBufferCollection> frame_buffer_collection;
+        std::unique_ptr<CommandBuffer> command_buffer;
+        std::unique_ptr<Semaphore> image_available;
+        std::unique_ptr<Semaphore> render_finished;
+        std::unique_ptr<Fence> in_flight;
 
         // Timing measurements
         TimingMeasurement timings;
 
         // ImGui
-        bool imGuiActive = false;
-        VkDescriptorPool guiPool = VK_NULL_HANDLE;
-        std::function<void()> guiDescriptor;
+        bool im_gui_active = false;
+        VkDescriptorPool gui_pool = VK_NULL_HANDLE;
+        std::function<void()> gui_descriptor;
     };
 }

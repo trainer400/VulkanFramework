@@ -70,7 +70,7 @@ namespace framework
 
         // Get the best features
         surface_format = chooseSwapSurfaceFormat(swap_chain_support.formats);
-        present_mode = chooseSwapPresentMode(swap_chain_support.presentModes);
+        present_mode = chooseSwapPresentMode(swap_chain_support.present_modes);
         extent = chooseSwapContext(swap_chain_support.capabilities, window->getWindow());
 
         // Configure the swap chain with retrieved data

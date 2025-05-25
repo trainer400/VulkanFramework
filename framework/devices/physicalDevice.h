@@ -9,7 +9,7 @@ namespace framework
     {
         VkSurfaceCapabilitiesKHR capabilities;
         std::vector<VkSurfaceFormatKHR> formats;
-        std::vector<VkPresentModeKHR> presentModes;
+        std::vector<VkPresentModeKHR> present_modes;
     };
     class PhysicalDevice
     {
@@ -24,9 +24,9 @@ namespace framework
         PhysicalDevice(VkInstance instance, VkSurfaceKHR surface, uint32_t index);
 
         // Getters
-        inline const VkPhysicalDevice &getDevice() { return pDevice; }
-        const std::vector<const char *> &getDeviceExtensions() { return deviceExtensions; }
-        SwapChainSupportDetails getSwapChainSupportDetails() { return querySwapChainSupport(pDevice); }
+        inline const VkPhysicalDevice &getDevice() { return p_device; }
+        const std::vector<const char *> &getDeviceExtensions() { return device_extensions; }
+        SwapChainSupportDetails getSwapChainSupportDetails() { return querySwapChainSupport(p_device); }
 
     private:
         /**
@@ -56,15 +56,15 @@ namespace framework
          */
         bool checkSwapChainAdequate(VkPhysicalDevice device);
 
-        VkPhysicalDevice pDevice = VK_NULL_HANDLE;
+        VkPhysicalDevice p_device = VK_NULL_HANDLE;
         VkInstance instance = VK_NULL_HANDLE;
         VkSurfaceKHR surface = VK_NULL_HANDLE;
-        uint32_t deviceIndex;
+        uint32_t device_index;
 
         // Vector of needed supported extensions for the physical device
-        std::vector<const char *> deviceExtensions;
+        std::vector<const char *> device_extensions;
 
         // List of details that the physical device supports
-        SwapChainSupportDetails swapChainSupport;
+        SwapChainSupportDetails swap_chain_support;
     };
 }

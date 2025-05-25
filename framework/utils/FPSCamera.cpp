@@ -3,8 +3,8 @@
 
 namespace framework
 {
-    FPSCamera::FPSCamera(float velocity, int fovY, float nearPlane, float farPlane, FPSCameraKeyBindings bindings)
-        : camera(fovY, nearPlane, farPlane), bindings(bindings),
+    FPSCamera::FPSCamera(float velocity, int fov_y, float near_plane, float far_plane, FPSCameraKeyBindings bindings)
+        : camera(fov_y, near_plane, far_plane), bindings(bindings),
           forward(velocity), backward(velocity), left(velocity),
           right(velocity), up(velocity), down(velocity)
     {
@@ -14,12 +14,12 @@ namespace framework
     {
         if (registered && window != nullptr)
         {
-            window->removeKeyCallback(bindings.forwardKey);
-            window->removeKeyCallback(bindings.backwardKey);
-            window->removeKeyCallback(bindings.leftKey);
-            window->removeKeyCallback(bindings.rightKey);
-            window->removeKeyCallback(bindings.upKey);
-            window->removeKeyCallback(bindings.downKey);
+            window->removeKeyCallback(bindings.forward_key);
+            window->removeKeyCallback(bindings.backward_key);
+            window->removeKeyCallback(bindings.left_key);
+            window->removeKeyCallback(bindings.right_key);
+            window->removeKeyCallback(bindings.up_key);
+            window->removeKeyCallback(bindings.down_key);
             window->removePosCallback();
 
             registered = false;
@@ -39,11 +39,11 @@ namespace framework
         // Window callbacks set
         window->setPosCallback([&, this](double xpos, double ypos)
                                {
-                                    float deltaYaw = (xpos - this->window->getWidth() / 2) * 0.08;
-                                    float deltaPitch = (ypos - this->window->getHeight() / 2) * 0.08;
+                                    float delta_yaw = (xpos - this->window->getWidth() / 2) * 0.08;
+                                    float delta_pitch = (ypos - this->window->getHeight() / 2) * 0.08;
 
-                                    yaw += deltaYaw;
-                                    pitch += deltaPitch;
+                                    yaw += delta_yaw;
+                                    pitch += delta_pitch;
 
                                     if(pitch > 89.f){pitch = 89.f;}
                                     if(pitch < -89.f) { pitch = -89.f;}
@@ -51,7 +51,7 @@ namespace framework
                                     if(yaw > 360) { yaw = 0;} 
                                     if(yaw < 0) { yaw = 360;} });
 
-        window->addKeyCallback(bindings.forwardKey, [&, this](int key, int acting)
+        window->addKeyCallback(bindings.forward_key, [&, this](int key, int acting)
                                {
                                     if (acting == GLFW_PRESS)
                                     {
@@ -62,7 +62,7 @@ namespace framework
                                         forward.stopCounting();
                                     } });
 
-        window->addKeyCallback(bindings.backwardKey, [&, this](int key, int acting)
+        window->addKeyCallback(bindings.backward_key, [&, this](int key, int acting)
                                {
                                     if (acting == GLFW_PRESS)
                                     {
@@ -73,7 +73,7 @@ namespace framework
                                         backward.stopCounting();
                                     } });
 
-        window->addKeyCallback(bindings.leftKey, [&, this](int key, int acting)
+        window->addKeyCallback(bindings.left_key, [&, this](int key, int acting)
                                {
                                     if (acting == GLFW_PRESS)
                                     {
@@ -84,7 +84,7 @@ namespace framework
                                         left.stopCounting();
                                     } });
 
-        window->addKeyCallback(bindings.rightKey, [&, this](int key, int acting)
+        window->addKeyCallback(bindings.right_key, [&, this](int key, int acting)
                                {
                                     if (acting == GLFW_PRESS)
                                     {
@@ -95,7 +95,7 @@ namespace framework
                                         right.stopCounting();
                                     } });
 
-        window->addKeyCallback(bindings.downKey, [&, this](int key, int acting)
+        window->addKeyCallback(bindings.down_key, [&, this](int key, int acting)
                                {
                                     if (acting == GLFW_PRESS)
                                     {
@@ -106,7 +106,7 @@ namespace framework
                                         down.stopCounting();
                                     } });
 
-        window->addKeyCallback(bindings.upKey, [&, this](int key, int acting)
+        window->addKeyCallback(bindings.up_key, [&, this](int key, int acting)
                                {
                                     if (acting == GLFW_PRESS)
                                     {

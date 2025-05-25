@@ -5,7 +5,7 @@
 
 namespace framework
 {
-    PhysicalDevice::PhysicalDevice(VkInstance instance, VkSurfaceKHR surface, uint32_t index) : instance(instance), surface(surface), deviceIndex(index)
+    PhysicalDevice::PhysicalDevice(VkInstance instance, VkSurfaceKHR surface, uint32_t index) : instance(instance), surface(surface), device_index(index)
     {
         if (instance == VK_NULL_HANDLE)
         {
@@ -17,27 +17,27 @@ namespace framework
             throw std::runtime_error("[PhysicalDevice] Null surface instance");
         }
 
-        uint32_t devicesNumber = getDevicesNumber();
+        uint32_t devices_number = getDevicesNumber();
 
         // Check parameter validity
-        if (index >= devicesNumber)
+        if (index >= devices_number)
         {
             throw std::runtime_error("[PhysicalDevice] Index > #devices");
         }
 
         // Init the extension list
-        deviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+        device_extensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
 
         // Vector in which insert the devices enumeration
-        std::vector<VkPhysicalDevice> devices(devicesNumber);
+        std::vector<VkPhysicalDevice> devices(devices_number);
 
         // Enumerate devices
-        vkEnumeratePhysicalDevices(this->instance, &devicesNumber, devices.data());
+        vkEnumeratePhysicalDevices(this->instance, &devices_number, devices.data());
 
         // Check if the device could work with vulkan
-        if (isDeviceSuitable(devices[this->deviceIndex]))
+        if (isDeviceSuitable(devices[this->device_index]))
         {
-            this->pDevice = devices[this->deviceIndex];
+            this->p_device = devices[this->device_index];
         }
         else
         {
@@ -72,8 +72,8 @@ namespace framework
         vkGetPhysicalDeviceFeatures(device, &feat);
 
         // Check device
-        bool devicePhysical = (prop.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU || prop.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU);
-        return devicePhysical && feat.geometryShader && feat.samplerAnisotropy && checkDeviceExtensionSupport(device) && checkSwapChainAdequate(device);
+        bool device_physical = (prop.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU || prop.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU);
+        return device_physical && feat.geometryShader && feat.samplerAnisotropy && checkDeviceExtensionSupport(device) && checkSwapChainAdequate(device);
     }
 
     bool PhysicalDevice::checkDeviceExtensionSupport(VkPhysicalDevice device)
@@ -83,26 +83,26 @@ namespace framework
             return false;
         }
 
-        uint32_t extensionCount;
+        uint32_t extension_count;
 
         // Get the number of extensions
-        vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
+        vkEnumerateDeviceExtensionProperties(device, nullptr, &extension_count, nullptr);
 
         // Enumerate the extensions
-        std::vector<VkExtensionProperties> availableExtensions(extensionCount);
-        vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
+        std::vector<VkExtensionProperties> available_extensions(extension_count);
+        vkEnumerateDeviceExtensionProperties(device, nullptr, &extension_count, available_extensions.data());
 
         // Create a set with all the required extensions
-        std::set<std::string> requiredExtension(deviceExtensions.begin(), deviceExtensions.end());
+        std::set<std::string> required_extension(device_extensions.begin(), device_extensions.end());
 
         // Remove the available extensions from the required ones
-        for (const VkExtensionProperties extension : availableExtensions)
+        for (const VkExtensionProperties extension : available_extensions)
         {
-            requiredExtension.erase(extension.extensionName);
+            required_extension.erase(extension.extensionName);
         }
 
         // If all needed extensions are supported the final set is empty
-        return requiredExtension.empty();
+        return required_extension.empty();
     }
 
     SwapChainSupportDetails PhysicalDevice::querySwapChainSupport(VkPhysicalDevice device)
@@ -118,29 +118,29 @@ namespace framework
         vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &details.capabilities);
 
         // Query the formats number
-        uint32_t formatCount;
-        vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, nullptr);
+        uint32_t format_count;
+        vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &format_count, nullptr);
 
-        if (formatCount != 0)
+        if (format_count != 0)
         {
             // Size the vector to the exact number
-            details.formats.resize(formatCount);
+            details.formats.resize(format_count);
 
             // Assign the formats to the vector
-            vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, details.formats.data());
+            vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &format_count, details.formats.data());
         }
 
         // Query the presentation modes number
-        uint32_t presentModeCount;
-        vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModeCount, nullptr);
+        uint32_t present_mode_count;
+        vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &present_mode_count, nullptr);
 
-        if (presentModeCount != 0)
+        if (present_mode_count != 0)
         {
             // Size the vector to the exact number
-            details.presentModes.resize(presentModeCount);
+            details.present_modes.resize(present_mode_count);
 
             // Assign the present modes to the vector
-            vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModeCount, details.presentModes.data());
+            vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &present_mode_count, details.present_modes.data());
         }
 
         return details;
@@ -154,10 +154,10 @@ namespace framework
         }
 
         // Query the swap chain support details
-        swapChainSupport = querySwapChainSupport(device);
+        swap_chain_support = querySwapChainSupport(device);
 
         // Check if there is something in formats and presentation modes
-        bool result = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
+        bool result = !swap_chain_support.formats.empty() && !swap_chain_support.present_modes.empty();
 
         return result;
     }

@@ -3,23 +3,23 @@
 
 namespace framework
 {
-    FrameBufferCollection::FrameBufferCollection(const std::shared_ptr<LogicalDevice> &lDevice,
-                                                 const std::vector<VkImageView> &imageViews, const VkExtent2D &extent,
-                                                 const DepthTestType &depthTestType, const VkImageView &depthImageView, const VkRenderPass &renderPass)
+    FrameBufferCollection::FrameBufferCollection(const std::shared_ptr<LogicalDevice> &l_device,
+                                                 const std::vector<VkImageView> &image_views, const VkExtent2D &extent,
+                                                 const DepthTestType &dept_test_type, const VkImageView &depth_image_view, const VkRenderPass &render_pass)
     {
-        if (lDevice == nullptr)
+        if (l_device == nullptr)
         {
             throw std::runtime_error("[FrameBufferCollection] Null device instance");
         }
 
-        if (renderPass == nullptr)
+        if (render_pass == nullptr)
         {
             throw std::runtime_error("[FrameBufferCollection] Null Render Pass instance");
         }
 
-        this->lDevice = lDevice;
+        this->l_device = l_device;
 
-        createFrameBuffer(imageViews, extent, depthTestType, depthImageView, renderPass);
+        createFrameBuffer(image_views, extent, dept_test_type, depth_image_view, render_pass);
     }
 
     FrameBufferCollection::~FrameBufferCollection()
@@ -27,60 +27,60 @@ namespace framework
         cleanup();
     }
 
-    void FrameBufferCollection::createFrameBuffer(const std::vector<VkImageView> &imageViews, const VkExtent2D &extent,
-                                                  const DepthTestType &depthTestType, const VkImageView &depthImageView, const VkRenderPass &renderPass)
+    void FrameBufferCollection::createFrameBuffer(const std::vector<VkImageView> &image_views, const VkExtent2D &extent,
+                                                  const DepthTestType &dept_test_type, const VkImageView &depth_image_view, const VkRenderPass &render_pass)
     {
         // Get the images pointer
-        size_t imagesSize = imageViews.size();
+        size_t images_size = image_views.size();
 
-        frameBuffers.clear();
-        frameBuffers.resize(imagesSize);
+        frame_buffers.clear();
+        frame_buffers.resize(images_size);
 
-        for (size_t i = 0; i < imagesSize; i++)
+        for (size_t i = 0; i < images_size; i++)
         {
             std::vector<VkImageView> attachments;
-            attachments.push_back(imageViews[i]);
+            attachments.push_back(image_views[i]);
 
             // Add the depth buffer if necessary
-            if (depthTestType != NONE && depthImageView != VK_NULL_HANDLE)
+            if (dept_test_type != NONE && depth_image_view != VK_NULL_HANDLE)
             {
-                attachments.push_back(depthImageView);
+                attachments.push_back(depth_image_view);
             }
 
-            VkFramebufferCreateInfo createInfo{};
+            VkFramebufferCreateInfo create_info{};
 
-            createInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-            createInfo.renderPass = renderPass;
-            createInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
-            createInfo.pAttachments = attachments.data();
-            createInfo.width = extent.width;
-            createInfo.height = extent.height;
-            createInfo.layers = 1;
+            create_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+            create_info.renderPass = render_pass;
+            create_info.attachmentCount = static_cast<uint32_t>(attachments.size());
+            create_info.pAttachments = attachments.data();
+            create_info.width = extent.width;
+            create_info.height = extent.height;
+            create_info.layers = 1;
 
-            if (vkCreateFramebuffer(lDevice->getDevice(), &createInfo, nullptr, &frameBuffers[i]) != VK_SUCCESS)
+            if (vkCreateFramebuffer(l_device->getDevice(), &create_info, nullptr, &frame_buffers[i]) != VK_SUCCESS)
             {
                 throw std::runtime_error("[FrameBufferCollection] Impossible to create a frame buffer");
             }
         }
     }
 
-    void FrameBufferCollection::recreateFrameBuffer(const std::vector<VkImageView> &imageViews, const VkExtent2D &extent,
-                                                    const DepthTestType &depthTestType, const VkImageView &depthImageView, const VkRenderPass &renderPass)
+    void FrameBufferCollection::recreateFrameBuffer(const std::vector<VkImageView> &image_views, const VkExtent2D &extent,
+                                                    const DepthTestType &dept_test_type, const VkImageView &depth_image_view, const VkRenderPass &render_pass)
     {
         // Clean the previous
         cleanup();
 
         // Create the new frame buffer
-        createFrameBuffer(imageViews, extent, depthTestType, depthImageView, renderPass);
+        createFrameBuffer(image_views, extent, dept_test_type, depth_image_view, render_pass);
     }
 
     void FrameBufferCollection::cleanup()
     {
-        for (VkFramebuffer buffer : frameBuffers)
+        for (VkFramebuffer buffer : frame_buffers)
         {
-            if (lDevice->getDevice() != VK_NULL_HANDLE && buffer != VK_NULL_HANDLE)
+            if (l_device->getDevice() != VK_NULL_HANDLE && buffer != VK_NULL_HANDLE)
             {
-                vkDestroyFramebuffer(lDevice->getDevice(), buffer, nullptr);
+                vkDestroyFramebuffer(l_device->getDevice(), buffer, nullptr);
             }
         }
     }

@@ -74,19 +74,19 @@ namespace framework
     {
         std::vector<float> vertices;
         std::vector<uint32_t> indices;
-        std::vector<VertexAttributes::DrawableAttribute> vertexAttributes;
+        std::vector<VertexAttributes::DrawableAttribute> vertex_attributes;
         bool has_transparency = false;
 
         // Add the vertex attributes depending on the config file
-        vertexAttributes.push_back(VertexAttributes::DrawableAttribute::F3); // XYZ coordinates
-        if (config.hasTexture)
-            vertexAttributes.push_back(VertexAttributes::DrawableAttribute::F2); // UV coordinates
-        if (config.hasNormals)
-            vertexAttributes.push_back(VertexAttributes::DrawableAttribute::F3); // Normals
-        if (config.addMedians)
-            vertexAttributes.push_back(VertexAttributes::DrawableAttribute::F3); // Medians added by user
-        if (config.hasTexture)
-            vertexAttributes.push_back(VertexAttributes::DrawableAttribute::I1); // In case of multiple textures, include the texture index
+        vertex_attributes.push_back(VertexAttributes::DrawableAttribute::F3); // XYZ coordinates
+        if (config.has_texture)
+            vertex_attributes.push_back(VertexAttributes::DrawableAttribute::F2); // UV coordinates
+        if (config.has_normals)
+            vertex_attributes.push_back(VertexAttributes::DrawableAttribute::F3); // Normals
+        if (config.add_medians)
+            vertex_attributes.push_back(VertexAttributes::DrawableAttribute::F3); // Medians added by user
+        if (config.has_texture)
+            vertex_attributes.push_back(VertexAttributes::DrawableAttribute::I1); // In case of multiple textures, include the texture index
 
         // Check the object transparency
         for (size_t i = 0; i < shape.mesh.indices.size(); i++)
@@ -95,7 +95,7 @@ namespace framework
             // Check if the object has transparency
             if (materials[material_index].alpha_texname != "" || materials[material_index].dissolve < 1)
                 has_transparency = true;
-                break;
+            break;
         }
 
         for (size_t i = 0; i < shape.mesh.indices.size(); i++)
@@ -103,26 +103,26 @@ namespace framework
             const tinyobj::index_t &index = shape.mesh.indices[i];
 
             // Insert the vertex
-            vertices.push_back((config.rightHandedRef ? -1 : 1) * attrib.vertices[3 * index.vertex_index + 0] * config.multiplicationFactor);
-            vertices.push_back(attrib.vertices[3 * index.vertex_index + 1] * config.multiplicationFactor);
-            vertices.push_back(attrib.vertices[3 * index.vertex_index + 2] * config.multiplicationFactor);
+            vertices.push_back((config.right_handed_ref ? -1 : 1) * attrib.vertices[3 * index.vertex_index + 0] * config.multiplication_factor);
+            vertices.push_back(attrib.vertices[3 * index.vertex_index + 1] * config.multiplication_factor);
+            vertices.push_back(attrib.vertices[3 * index.vertex_index + 2] * config.multiplication_factor);
 
-            if (config.hasTexture)
+            if (config.has_texture)
             {
                 // Insert the texture coordinates
                 vertices.push_back(attrib.texcoords[2 * index.texcoord_index + 0]);
-                vertices.push_back((config.invertTexture ? -1 : 1) * attrib.texcoords[2 * index.texcoord_index + 1]);
+                vertices.push_back((config.invert_texture ? -1 : 1) * attrib.texcoords[2 * index.texcoord_index + 1]);
             }
 
-            if (config.hasNormals)
+            if (config.has_normals)
             {
                 // Insert the normal coordinates
-                vertices.push_back((config.rightHandedRef ? -1 : 1) * attrib.normals[3 * index.normal_index + 0]);
+                vertices.push_back((config.right_handed_ref ? -1 : 1) * attrib.normals[3 * index.normal_index + 0]);
                 vertices.push_back(attrib.normals[3 * index.normal_index + 1]);
                 vertices.push_back(attrib.normals[3 * index.normal_index + 2]);
             }
 
-            if (config.addMedians)
+            if (config.add_medians)
             {
                 // Insert point with 1 on the axis of this index % 3
                 std::vector<float> med;
@@ -138,16 +138,16 @@ namespace framework
             }
 
             uint16_t material_index = shape.mesh.material_ids[i / 3];
-            uint32_t material_data = (has_transparency ? 0x1 << 31 : 0x0) | material_index; 
+            uint32_t material_data = (has_transparency ? 0x1 << 31 : 0x0) | material_index;
 
             // Insert the material index inside the vertex (/3 because it is the same for every vertex in the same triangle)
-            vertices.push_back(*reinterpret_cast<float*>(&material_data));
+            vertices.push_back(*reinterpret_cast<float *>(&material_data));
 
             // Insert the index
             indices.push_back((vertices.size() / vertex_size) - 1);
 
             // If just finished to insert a triangle, when it is a right handed reference, swap the indices
-            if (config.rightHandedRef && indices.size() % 3 == 0)
+            if (config.right_handed_ref && indices.size() % 3 == 0)
             {
                 uint32_t temp = indices[indices.size() - 1];
                 indices[indices.size() - 1] = indices[indices.size() - 2];
@@ -156,7 +156,7 @@ namespace framework
         }
 
         // Create the result drawable object
-        return std::make_shared<DefaultDrawableElement>(vertices, vertexAttributes, indices, has_transparency);
+        return std::make_shared<DefaultDrawableElement>(vertices, vertex_attributes, indices, has_transparency);
     }
 
     std::vector<std::shared_ptr<DefaultDrawableElement>> parseObjFile(const char *filename, const ObjectParserConfiguration &config, std::vector<std::string> &tex_paths)
@@ -164,7 +164,7 @@ namespace framework
         if (filename == nullptr)
             throw runtime_error("[ObjectParser] Null filename");
 
-        if (config.multiplicationFactor <= 0)
+        if (config.multiplication_factor <= 0)
             throw runtime_error("[ObjectParser] Bad multiplication factor (<= 0)");
 
         // Instantiate all the tinyOBJ loader objects
@@ -184,7 +184,7 @@ namespace framework
             throw std::runtime_error("[ObjectParser] Error from tiny-OBJ: " + warn + err);
 
         // The last +1 is for the material index (TODO use uint for material index)
-        uint32_t vertex_size = 3 + (config.hasTexture ? 2 : 0) + (config.hasNormals ? 3 : 0) + (config.addMedians ? 3 : 0) + (config.hasTexture ? 1 : 0);
+        uint32_t vertex_size = 3 + (config.has_texture ? 2 : 0) + (config.has_normals ? 3 : 0) + (config.add_medians ? 3 : 0) + (config.has_texture ? 1 : 0);
 
         // Get all the texture paths
         tex_paths = getTexturePaths(mtl_file_folder, materials);

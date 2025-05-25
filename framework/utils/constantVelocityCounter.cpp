@@ -14,13 +14,13 @@ namespace framework
             auto time = std::chrono::system_clock::now();
 
             // Compute the delta
-            int64_t delta = std::chrono::duration_cast<std::chrono::milliseconds>(time - lastUpdate).count();
+            int64_t delta = std::chrono::duration_cast<std::chrono::milliseconds>(time - last_update).count();
 
             // Progress the counting
             position += velocity * delta / 1000.f;
 
             // Update the last time
-            lastUpdate = time;
+            last_update = time;
         }
     }
 
@@ -31,7 +31,7 @@ namespace framework
             counting = true;
 
             // Set the last update time
-            lastUpdate = std::chrono::system_clock::now();
+            last_update = std::chrono::system_clock::now();
         }
     }
 

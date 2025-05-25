@@ -8,58 +8,58 @@
 
 namespace framework
 {
-    Vulkan::Vulkan(const char *applicationName, const char *engineName, const std::vector<const char *> &addedExtensions, bool enableLayers)
+    Vulkan::Vulkan(const char *application_name, const char *engine_name, const std::vector<const char *> &added_extensions, bool enable_layers)
     {
-        if (applicationName == nullptr || engineName == nullptr)
+        if (application_name == nullptr || engine_name == nullptr)
         {
             throw std::runtime_error("[Vulkan] Nullptrs in application and engine names");
         }
 
-        const char **glfwExtensions;
-        uint32_t glfwExtensionCount = 0;
+        const char **glfw_extensions;
+        uint32_t glfw_extension_count = 0;
 
         // Gather the glfw info
-        glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+        glfw_extensions = glfwGetRequiredInstanceExtensions(&glfw_extension_count);
 
-        if (glfwExtensions == nullptr)
+        if (glfw_extensions == nullptr)
         {
             throw std::runtime_error("[Vulkan] Impossible to enumerate instance extensions");
         }
 
         // Merge the extension names
         char **extensions;
-        extensions = new char *[glfwExtensionCount + addedExtensions.size()];
+        extensions = new char *[glfw_extension_count + added_extensions.size()];
 
-        for (int i = 0; i < glfwExtensionCount; i++)
+        for (int i = 0; i < glfw_extension_count; i++)
         {
-            extensions[i] = new char[strlen(glfwExtensions[i]) + 1];
-            strcpy(extensions[i], glfwExtensions[i]);
+            extensions[i] = new char[strlen(glfw_extensions[i]) + 1];
+            strcpy(extensions[i], glfw_extensions[i]);
         }
 
-        for (int i = 0; i < addedExtensions.size(); i++)
+        for (int i = 0; i < added_extensions.size(); i++)
         {
-            extensions[glfwExtensionCount + i] = new char[strlen(addedExtensions[i]) + 1];
-            strcpy(extensions[glfwExtensionCount + i], addedExtensions[i]);
+            extensions[glfw_extension_count + i] = new char[strlen(added_extensions[i]) + 1];
+            strcpy(extensions[glfw_extension_count + i], added_extensions[i]);
         }
 
         // Setup the structure to instantiate vulkan
-        VkApplicationInfo appInfo{};
-        appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-        appInfo.pApplicationName = applicationName;
-        appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-        appInfo.pEngineName = engineName;
-        appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-        appInfo.apiVersion = VK_API_VERSION_1_0;
+        VkApplicationInfo application_info{};
+        application_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+        application_info.pApplicationName = application_name;
+        application_info.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
+        application_info.pEngineName = engine_name;
+        application_info.engineVersion = VK_MAKE_VERSION(1, 0, 0);
+        application_info.apiVersion = VK_API_VERSION_1_0;
 
-        VkInstanceCreateInfo createInfo{};
-        createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-        createInfo.pApplicationInfo = &appInfo;
-        createInfo.enabledExtensionCount = glfwExtensionCount + addedExtensions.size();
-        createInfo.ppEnabledExtensionNames = extensions;
-        createInfo.enabledLayerCount = 0;
+        VkInstanceCreateInfo create_info{};
+        create_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+        create_info.pApplicationInfo = &application_info;
+        create_info.enabledExtensionCount = glfw_extension_count + added_extensions.size();
+        create_info.ppEnabledExtensionNames = extensions;
+        create_info.enabledLayerCount = 0;
 
         // Create validation layers
-        if (enableLayers)
+        if (enable_layers)
         {
             // Enumerate valiation layers
             uint32_t layerCount;
@@ -70,15 +70,15 @@ namespace framework
             vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
             // Check validation layers support
-            bool layerFound = false;
-            for (const char *layerName : validationLayers)
+            bool layer_found = false;
+            for (const char *layer_name : validation_layers)
             {
-                layerFound = false;
+                layer_found = false;
                 for (const VkLayerProperties properties : availableLayers)
                 {
-                    if (strcmp(layerName, properties.layerName) == 0)
+                    if (strcmp(layer_name, properties.layerName) == 0)
                     {
-                        layerFound = true;
+                        layer_found = true;
 
                         // Found the layer
                         break;
@@ -86,25 +86,25 @@ namespace framework
                 }
 
                 // In case of layer not found break
-                if (!layerFound)
+                if (!layer_found)
                 {
                     throw std::runtime_error("[Vulkan] Not compatible validation layer found");
                 }
             }
 
             // Set the validation layers
-            createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
-            createInfo.ppEnabledLayerNames = validationLayers.data();
+            create_info.enabledLayerCount = static_cast<uint32_t>(validation_layers.size());
+            create_info.ppEnabledLayerNames = validation_layers.data();
         }
 
         // Create vulkan instance
-        if (vkCreateInstance(&createInfo, nullptr, &this->instance) != VK_SUCCESS)
+        if (vkCreateInstance(&create_info, nullptr, &this->instance) != VK_SUCCESS)
         {
             throw std::runtime_error("[Vulkan] Impossible to create VK instance");
         }
 
         // After instance creation free the extensions
-        for (int i = 0; i < glfwExtensionCount + addedExtensions.size(); i++)
+        for (int i = 0; i < glfw_extension_count + added_extensions.size(); i++)
         {
             delete (extensions[i]);
         }

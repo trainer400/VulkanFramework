@@ -14,15 +14,15 @@ namespace framework
 {
     struct UniformBufferConfiguration
     {
-        uint32_t bindingIndex = 0;
-        VkShaderStageFlags stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+        uint32_t binding_index = 0;
+        VkShaderStageFlags stage_flags = VK_SHADER_STAGE_VERTEX_BIT;
     };
 
     template <typename T>
     class UniformBuffer : public DescriptorElement
     {
     public:
-        UniformBuffer(const std::shared_ptr<LogicalDevice> &lDevice, const UniformBufferConfiguration &config);
+        UniformBuffer(const std::shared_ptr<LogicalDevice> &l_device, const UniformBufferConfiguration &config);
         ~UniformBuffer();
 
         // Set the data
@@ -32,64 +32,64 @@ namespace framework
         const VkDescriptorSetLayoutBinding getDescriptorSetLayoutBinding() override;
         const VkDescriptorPoolSize getPoolSize() override;
         const VkWriteDescriptorSet getWriteDescriptorSet() override;
-        inline const VkBuffer &getUniformBuffer() { return uniformBuffer; }
+        inline const VkBuffer &getUniformBuffer() { return uniform_buffer; }
 
     private:
         /**
          * @brief Allocates a buffer of memory depending on the passed parameters
          */
-        void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer &buffer, VkDeviceMemory &bufferMemory);
+        void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer &buffer, VkDeviceMemory &buffer_memory);
 
-        uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+        uint32_t findMemoryType(uint32_t type_filter, VkMemoryPropertyFlags properties);
 
-        std::shared_ptr<LogicalDevice> lDevice;
+        std::shared_ptr<LogicalDevice> l_device;
 
         UniformBufferConfiguration config;
 
         // UBO
-        VkBuffer uniformBuffer = VK_NULL_HANDLE;
-        VkDeviceMemory uniformBufferMemory = VK_NULL_HANDLE;
-        VkDescriptorBufferInfo bufferInfo{};
-        void *mappedMemory;
+        VkBuffer uniform_buffer = VK_NULL_HANDLE;
+        VkDeviceMemory uniform_buffer_memory = VK_NULL_HANDLE;
+        VkDescriptorBufferInfo buffer_info{};
+        void *mapped_memory;
     };
 
     template <typename T>
-    UniformBuffer<T>::UniformBuffer(const std::shared_ptr<LogicalDevice> &lDevice, const UniformBufferConfiguration &config)
-        : DescriptorElement(config.bindingIndex), config(config)
+    UniformBuffer<T>::UniformBuffer(const std::shared_ptr<LogicalDevice> &l_device, const UniformBufferConfiguration &config)
+        : DescriptorElement(config.binding_index), config(config)
     {
-        if (lDevice == nullptr)
+        if (l_device == nullptr)
         {
             throw std::runtime_error("[UniformBuffer] Null logical device instance");
         }
 
-        this->lDevice = lDevice;
+        this->l_device = l_device;
 
-        VkDeviceSize bufferSize = sizeof(T);
+        VkDeviceSize buffer_size = sizeof(T);
 
-        createBuffer(bufferSize,
+        createBuffer(buffer_size,
                      VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                     uniformBuffer, uniformBufferMemory);
+                     uniform_buffer, uniform_buffer_memory);
 
         // Persistent memory mapping
-        vkMapMemory(lDevice->getDevice(), uniformBufferMemory, 0, bufferSize, 0, &mappedMemory);
+        vkMapMemory(l_device->getDevice(), uniform_buffer_memory, 0, buffer_size, 0, &mapped_memory);
 
-        bufferInfo.buffer = uniformBuffer;
-        bufferInfo.offset = 0;
-        bufferInfo.range = sizeof(T);
+        buffer_info.buffer = uniform_buffer;
+        buffer_info.offset = 0;
+        buffer_info.range = sizeof(T);
     }
 
     template <typename T>
     UniformBuffer<T>::~UniformBuffer()
     {
-        if (uniformBuffer != VK_NULL_HANDLE)
+        if (uniform_buffer != VK_NULL_HANDLE)
         {
-            vkDestroyBuffer(lDevice->getDevice(), uniformBuffer, nullptr);
+            vkDestroyBuffer(l_device->getDevice(), uniform_buffer, nullptr);
         }
 
-        if (uniformBufferMemory != VK_NULL_HANDLE)
+        if (uniform_buffer_memory != VK_NULL_HANDLE)
         {
-            vkFreeMemory(lDevice->getDevice(), uniformBufferMemory, nullptr);
+            vkFreeMemory(l_device->getDevice(), uniform_buffer_memory, nullptr);
         }
     }
 
@@ -97,99 +97,99 @@ namespace framework
     void UniformBuffer<T>::setData(const T &data)
     {
         // Copy the data inside the shared memory
-        memcpy(mappedMemory, &data, sizeof(T));
+        memcpy(mapped_memory, &data, sizeof(T));
     }
 
     template <typename T>
     const VkDescriptorSetLayoutBinding UniformBuffer<T>::getDescriptorSetLayoutBinding()
     {
-        VkDescriptorSetLayoutBinding uboLayoutBinding{};
+        VkDescriptorSetLayoutBinding ubo_layout_binding{};
 
-        uboLayoutBinding.binding = config.bindingIndex;
-        uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        uboLayoutBinding.descriptorCount = 1;
-        uboLayoutBinding.stageFlags = config.stageFlags;
-        uboLayoutBinding.pImmutableSamplers = nullptr;
+        ubo_layout_binding.binding = config.binding_index;
+        ubo_layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        ubo_layout_binding.descriptorCount = 1;
+        ubo_layout_binding.stageFlags = config.stage_flags;
+        ubo_layout_binding.pImmutableSamplers = nullptr;
 
-        return uboLayoutBinding;
+        return ubo_layout_binding;
     }
 
     template <typename T>
     const VkDescriptorPoolSize UniformBuffer<T>::getPoolSize()
     {
-        VkDescriptorPoolSize poolSize{};
+        VkDescriptorPoolSize pool_size{};
 
-        poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        poolSize.descriptorCount = 1;
+        pool_size.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        pool_size.descriptorCount = 1;
 
-        return poolSize;
+        return pool_size;
     }
 
     template <typename T>
     const VkWriteDescriptorSet UniformBuffer<T>::getWriteDescriptorSet()
     {
-        VkWriteDescriptorSet descriptorWrite{};
+        VkWriteDescriptorSet descriptor_write{};
 
         // TODO dstBinding may be changed to have more than one uniform buffers
-        descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        descriptorWrite.dstBinding = config.bindingIndex;
-        descriptorWrite.dstArrayElement = 0;
-        descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        descriptorWrite.descriptorCount = 1;
-        descriptorWrite.pBufferInfo = &bufferInfo;
-        descriptorWrite.pImageInfo = nullptr;
-        descriptorWrite.pTexelBufferView = nullptr;
+        descriptor_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        descriptor_write.dstBinding = config.binding_index;
+        descriptor_write.dstArrayElement = 0;
+        descriptor_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        descriptor_write.descriptorCount = 1;
+        descriptor_write.pBufferInfo = &buffer_info;
+        descriptor_write.pImageInfo = nullptr;
+        descriptor_write.pTexelBufferView = nullptr;
 
-        return descriptorWrite;
+        return descriptor_write;
     }
 
     template <typename T>
-    void UniformBuffer<T>::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer &buffer, VkDeviceMemory &bufferMemory)
+    void UniformBuffer<T>::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer &buffer, VkDeviceMemory &buffer_memory)
     {
         // Create vertex buffer
-        VkBufferCreateInfo bufferInfo{};
+        VkBufferCreateInfo buffer_info{};
 
-        bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-        bufferInfo.size = size;
-        bufferInfo.usage = usage;
-        bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        buffer_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        buffer_info.size = size;
+        buffer_info.usage = usage;
+        buffer_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-        if (vkCreateBuffer(lDevice->getDevice(), &bufferInfo, nullptr, &buffer) != VK_SUCCESS)
+        if (vkCreateBuffer(l_device->getDevice(), &buffer_info, nullptr, &buffer) != VK_SUCCESS)
         {
             throw std::runtime_error("[DrawableCollection] Impossible to create the buffer");
         }
 
         // Enumerate the memory requirements
-        VkMemoryRequirements memRequirements;
-        vkGetBufferMemoryRequirements(lDevice->getDevice(), buffer, &memRequirements);
+        VkMemoryRequirements memory_requirements;
+        vkGetBufferMemoryRequirements(l_device->getDevice(), buffer, &memory_requirements);
 
         // Allocate the memory on GPU
-        VkMemoryAllocateInfo allocInfo{};
+        VkMemoryAllocateInfo alloc_info{};
 
-        allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-        allocInfo.allocationSize = memRequirements.size;
-        allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
+        alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+        alloc_info.allocationSize = memory_requirements.size;
+        alloc_info.memoryTypeIndex = findMemoryType(memory_requirements.memoryTypeBits, properties);
 
-        if (vkAllocateMemory(lDevice->getDevice(), &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS)
+        if (vkAllocateMemory(l_device->getDevice(), &alloc_info, nullptr, &buffer_memory) != VK_SUCCESS)
         {
             throw std::runtime_error("[DrawableCollection] Impossible to allocate the required memory on the GPU");
         }
 
         // Associate the buffer to the memory
-        vkBindBufferMemory(lDevice->getDevice(), buffer, bufferMemory, 0);
+        vkBindBufferMemory(l_device->getDevice(), buffer, buffer_memory, 0);
     }
 
     template <typename T>
-    uint32_t UniformBuffer<T>::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
+    uint32_t UniformBuffer<T>::findMemoryType(uint32_t type_filter, VkMemoryPropertyFlags properties)
     {
-        VkPhysicalDeviceMemoryProperties memProperties;
+        VkPhysicalDeviceMemoryProperties memory_properties;
 
         // Enumerate the memory properties
-        vkGetPhysicalDeviceMemoryProperties(lDevice->getPhysicalDevice()->getDevice(), &memProperties);
+        vkGetPhysicalDeviceMemoryProperties(l_device->getPhysicalDevice()->getDevice(), &memory_properties);
 
-        for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++)
+        for (uint32_t i = 0; i < memory_properties.memoryTypeCount; i++)
         {
-            if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties)
+            if ((type_filter & (1 << i)) && (memory_properties.memoryTypes[i].propertyFlags & properties) == properties)
             {
                 return i;
             }

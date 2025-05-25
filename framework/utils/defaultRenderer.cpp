@@ -9,7 +9,7 @@ namespace framework
 
     DefaultRenderer::~DefaultRenderer()
     {
-        if (imGuiActive)
+        if (im_gui_active)
         {
             ImGui_ImplVulkan_Shutdown();
             ImGui_ImplGlfw_Shutdown();
@@ -17,7 +17,7 @@ namespace framework
             ImGui::DestroyContext();
 
             // Delete custom ImGUI descriptor pool
-            vkDestroyDescriptorPool(lDevice->getDevice(), guiPool, nullptr);
+            vkDestroyDescriptorPool(l_device->getDevice(), gui_pool, nullptr);
         }
     }
 
@@ -64,12 +64,12 @@ namespace framework
             throw std::runtime_error("[DefaultRenderer] Device not created");
         }
 
-        this->lDevice = d;
+        this->l_device = d;
 
         // Create the sync objects
-        imageAvailable = std::make_unique<Semaphore>(lDevice);
-        renderFinished = std::make_unique<Semaphore>(lDevice);
-        inFlight = std::make_unique<Fence>(lDevice, true);
+        image_available = std::make_unique<Semaphore>(l_device);
+        render_finished = std::make_unique<Semaphore>(l_device);
+        in_flight = std::make_unique<Fence>(l_device, true);
     }
 
     void DefaultRenderer::selectSwapChain(std::unique_ptr<SwapChain> s)
@@ -84,14 +84,14 @@ namespace framework
             throw std::runtime_error("[DefaultRenderer] Swapchain not created");
         }
 
-        this->swapChain = std::move(s);
+        this->swap_chain = std::move(s);
     }
 
     void DefaultRenderer::selectRenderPass(std::unique_ptr<RenderPass> r)
     {
         if (r == nullptr)
         {
-            throw std::runtime_error("[DefaultRenderer] Null renderPass instance");
+            throw std::runtime_error("[DefaultRenderer] Null render_pass instance");
         }
 
         if (r->getRenderPass() == VK_NULL_HANDLE)
@@ -99,7 +99,7 @@ namespace framework
             throw std::runtime_error("[DefaultRenderer] Null render pass vulkan instance");
         }
 
-        this->renderPass = std::move(r);
+        this->render_pass = std::move(r);
     }
 
     void DefaultRenderer::addPipeline(std::shared_ptr<Pipeline> p)
@@ -120,7 +120,7 @@ namespace framework
             throw std::runtime_error("[DefaultRenderer] Null frame buffer collection instance");
         }
 
-        this->frameBufferCollection = std::move(c);
+        this->frame_buffer_collection = std::move(c);
     }
 
     void DefaultRenderer::selectCommandBuffer(std::unique_ptr<CommandBuffer> b)
@@ -130,94 +130,94 @@ namespace framework
             throw std::runtime_error("[DefaultRenderer] Null command buffer instance");
         }
 
-        this->commandBuffer = std::move(b);
+        this->command_buffer = std::move(b);
     }
 
-    void DefaultRenderer::recordCommandBuffer(uint32_t index, VkClearValue clearColor)
+    void DefaultRenderer::recordCommandBuffer(uint32_t index, VkClearValue clear_color)
     {
-        if (renderPass == nullptr || frameBufferCollection == nullptr || swapChain == nullptr || commandBuffer == nullptr)
+        if (render_pass == nullptr || frame_buffer_collection == nullptr || swap_chain == nullptr || command_buffer == nullptr)
         {
             throw std::runtime_error("[DefaultRenderer] graphics objects before recording the command buffer");
         }
 
-        if (index >= frameBufferCollection->getFrameBuffers().size())
+        if (index >= frame_buffer_collection->getFrameBuffers().size())
         {
             throw std::runtime_error("[DefaultRenderer] Index >= of the maximum size");
         }
 
-        commandBuffer->beginRecording();
-        renderPass->begin(commandBuffer->getCommandBuffer(), frameBufferCollection->getFrameBuffers()[index], swapChain->getExtent(), clearColor);
+        command_buffer->beginRecording();
+        render_pass->begin(command_buffer->getCommandBuffer(), frame_buffer_collection->getFrameBuffers()[index], swap_chain->getExtent(), clear_color);
 
         for (const std::shared_ptr<Pipeline> &pipeline : pipelines)
         {
             if (pipeline->isVisible())
             {
                 // Bind the pipeline (TODO make the compute pipeline also possible)
-                vkCmdBindPipeline(commandBuffer->getCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->getPipeline());
+                vkCmdBindPipeline(command_buffer->getCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->getPipeline());
 
                 // Set dynamics of viewport and scissors
                 VkViewport viewport{};
 
                 viewport.x = 0;
                 viewport.y = 0;
-                viewport.width = static_cast<float>(swapChain->getExtent().width);
-                viewport.height = static_cast<float>(swapChain->getExtent().height);
+                viewport.width = static_cast<float>(swap_chain->getExtent().width);
+                viewport.height = static_cast<float>(swap_chain->getExtent().height);
                 viewport.minDepth = 0;
                 viewport.maxDepth = 1;
 
-                vkCmdSetViewport(commandBuffer->getCommandBuffer(), 0, 1, &viewport);
+                vkCmdSetViewport(command_buffer->getCommandBuffer(), 0, 1, &viewport);
 
                 VkRect2D scissors{};
                 scissors.offset = {0, 0};
-                scissors.extent = swapChain->getExtent();
+                scissors.extent = swap_chain->getExtent();
 
-                vkCmdSetScissor(commandBuffer->getCommandBuffer(), 0, 1, &scissors);
+                vkCmdSetScissor(command_buffer->getCommandBuffer(), 0, 1, &scissors);
 
                 // Bind the drawable collection of vertices
-                VkBuffer vertexBuffers[] = {pipeline->getVertexBuffer()};
+                VkBuffer vertex_buffers[] = {pipeline->getVertexBuffer()};
                 VkDeviceSize offset[] = {0};
-                vkCmdBindVertexBuffers(commandBuffer->getCommandBuffer(), 0, 1, vertexBuffers, offset);
+                vkCmdBindVertexBuffers(command_buffer->getCommandBuffer(), 0, 1, vertex_buffers, offset);
 
                 // Bind the drawable collection of indices
-                vkCmdBindIndexBuffer(commandBuffer->getCommandBuffer(), pipeline->getIndexBuffer(), 0, VK_INDEX_TYPE_UINT32);
+                vkCmdBindIndexBuffer(command_buffer->getCommandBuffer(), pipeline->getIndexBuffer(), 0, VK_INDEX_TYPE_UINT32);
 
                 // Bind the Uniform buffer and texture
                 if (pipeline->hasDescriptorSet())
                 {
-                    vkCmdBindDescriptorSets(commandBuffer->getCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->getLayout(), 0, 1, &pipeline->getDescriptorSet(), 0, nullptr);
+                    vkCmdBindDescriptorSets(command_buffer->getCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->getLayout(), 0, 1, &pipeline->getDescriptorSet(), 0, nullptr);
                 }
 
                 // Draw command (TODO make the vertices and instances configurable)
-                vkCmdDrawIndexed(commandBuffer->getCommandBuffer(), pipeline->getIndexSize(), pipeline->getNumberOfInstances(), 0, 0, 0);
+                vkCmdDrawIndexed(command_buffer->getCommandBuffer(), pipeline->getIndexSize(), pipeline->getNumberOfInstances(), 0, 0, 0);
             }
         }
 
         // If present record also ImGui
-        if (imGuiActive)
+        if (im_gui_active)
         {
-            ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer->getCommandBuffer());
+            ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), command_buffer->getCommandBuffer());
         }
 
         // Finish stopping the buffer recording
-        renderPass->end(commandBuffer->getCommandBuffer());
-        commandBuffer->stopRecording();
+        render_pass->end(command_buffer->getCommandBuffer());
+        command_buffer->stopRecording();
     }
 
-    VkResult DefaultRenderer::draw(VkClearValue clearColor)
+    VkResult DefaultRenderer::draw(VkClearValue clear_color)
     {
         using clock = std::chrono::steady_clock;
         using micros = std::chrono::microseconds;
 
         // Start time for entire draw function
-        auto startDraw = clock::now();
+        auto start_draw = clock::now();
 
         // Start time for fence wait function
         auto start = clock::now();
         // Wait for previous frame to be completed
-        inFlight->waitFor(1);
+        in_flight->waitFor(1);
 
         // Record fence wait time
-        timings.timeToWaitFence = std::chrono::duration_cast<micros>(clock::now() - start).count() / 1000.f;
+        timings.time_to_wait_fence = std::chrono::duration_cast<micros>(clock::now() - start).count() / 1000.f;
 
         // Start time for pipeline updates
         start = clock::now();
@@ -228,19 +228,19 @@ namespace framework
         }
 
         // Record pipeline update time
-        timings.timeToUpdatePipelines = std::chrono::duration_cast<micros>(clock::now() - start).count() / 1000.f;
+        timings.time_to_update_pipelines = std::chrono::duration_cast<micros>(clock::now() - start).count() / 1000.f;
 
         // Acquire image from swap chain
-        uint32_t imageIndex;
+        uint32_t image_index;
 
         // Start time for acquiring the next image
         start = clock::now();
 
-        // When the operation is complete the imageAvailable semaphore is signaled
-        VkResult result = vkAcquireNextImageKHR(lDevice->getDevice(), swapChain->getSwapChain(), UINT64_MAX, imageAvailable->getSemaphore(), VK_NULL_HANDLE, &imageIndex);
+        // When the operation is complete the image_available semaphore is signaled
+        VkResult result = vkAcquireNextImageKHR(l_device->getDevice(), swap_chain->getSwapChain(), UINT64_MAX, image_available->getSemaphore(), VK_NULL_HANDLE, &image_index);
 
         // Record time to acquire image
-        timings.timeToAcquireImage = std::chrono::duration_cast<micros>(clock::now() - start).count() / 1000.f;
+        timings.time_to_acquire_image = std::chrono::duration_cast<micros>(clock::now() - start).count() / 1000.f;
 
         // Check if the swapchain has become obsolete
         if (result == VK_ERROR_OUT_OF_DATE_KHR)
@@ -249,27 +249,27 @@ namespace framework
         }
 
         // Reset the fence
-        inFlight->reset(1);
+        in_flight->reset(1);
 
         // Reset the command buffer
-        vkResetCommandBuffer(commandBuffer->getCommandBuffer(), 0);
+        vkResetCommandBuffer(command_buffer->getCommandBuffer(), 0);
 
         // Recreate the new frame if gui is active
-        if (imGuiActive)
+        if (im_gui_active)
         {
             ImGui_ImplVulkan_NewFrame();
             ImGui_ImplGlfw_NewFrame();
             ImGui::NewFrame();
 
             // Call the user defined gui descriptor
-            if (guiDescriptor)
+            if (gui_descriptor)
             {
                 // Start time for describing the gui
                 start = clock::now();
-                guiDescriptor();
+                gui_descriptor();
 
                 // Record time to describe the gui
-                timings.timeToDescribeGui = std::chrono::duration_cast<micros>(clock::now() - start).count() / 1000.f;
+                timings.time_to_describe_gui = std::chrono::duration_cast<micros>(clock::now() - start).count() / 1000.f;
             }
 
             // Create the rendered frame described by user
@@ -280,58 +280,58 @@ namespace framework
         start = clock::now();
 
         // Record the buffer
-        recordCommandBuffer(imageIndex, clearColor);
+        recordCommandBuffer(image_index, clear_color);
 
         // Record time to record command buffer
-        timings.timeToRecordCommandBuffer = std::chrono::duration_cast<micros>(clock::now() - start).count() / 1000.f;
+        timings.time_to_record_command_buffer = std::chrono::duration_cast<micros>(clock::now() - start).count() / 1000.f;
 
         // Submit the command buffer to the graphics queue
-        VkSubmitInfo submitInfo{};
+        VkSubmitInfo submit_info{};
 
-        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-        VkSemaphore waitSemaphores[] = {imageAvailable->getSemaphore()};
-        VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-        submitInfo.waitSemaphoreCount = 1;
-        submitInfo.pWaitSemaphores = waitSemaphores;
-        submitInfo.pWaitDstStageMask = waitStages;
-        submitInfo.commandBufferCount = 1;
-        submitInfo.pCommandBuffers = &commandBuffer->getCommandBuffer();
+        VkSemaphore wait_semaphores[] = {image_available->getSemaphore()};
+        VkPipelineStageFlags wait_stages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+        submit_info.waitSemaphoreCount = 1;
+        submit_info.pWaitSemaphores = wait_semaphores;
+        submit_info.pWaitDstStageMask = wait_stages;
+        submit_info.commandBufferCount = 1;
+        submit_info.pCommandBuffers = &command_buffer->getCommandBuffer();
 
-        VkSemaphore signalSemaphores[] = {renderFinished->getSemaphore()};
-        submitInfo.signalSemaphoreCount = 1;
-        submitInfo.pSignalSemaphores = signalSemaphores;
+        VkSemaphore signalSemaphores[] = {render_finished->getSemaphore()};
+        submit_info.signalSemaphoreCount = 1;
+        submit_info.pSignalSemaphores = signalSemaphores;
 
-        if (vkQueueSubmit(lDevice->getGraphicsQueue(), 1, &submitInfo, inFlight->getFence()) != VK_SUCCESS)
+        if (vkQueueSubmit(l_device->getGraphicsQueue(), 1, &submit_info, in_flight->getFence()) != VK_SUCCESS)
         {
             throw std::runtime_error("[DefaultRenderer] Failed tu submit draw command buffer to graphics queue");
         }
 
         // Presentation (retrieve the rendering result)
-        VkPresentInfoKHR presentInfo{};
+        VkPresentInfoKHR present_info{};
 
-        presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-        presentInfo.waitSemaphoreCount = 1;
-        presentInfo.pWaitSemaphores = signalSemaphores; // Wait for render
+        present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+        present_info.waitSemaphoreCount = 1;
+        present_info.pWaitSemaphores = signalSemaphores; // Wait for render
 
-        VkSwapchainKHR swapChains[] = {swapChain->getSwapChain()};
-        presentInfo.swapchainCount = 1;
-        presentInfo.pSwapchains = swapChains;
-        presentInfo.pImageIndices = &imageIndex;
-        presentInfo.pResults = nullptr;
+        VkSwapchainKHR swapChains[] = {swap_chain->getSwapChain()};
+        present_info.swapchainCount = 1;
+        present_info.pSwapchains = swapChains;
+        present_info.pImageIndices = &image_index;
+        present_info.pResults = nullptr;
 
-        vkQueuePresentKHR(lDevice->getPresentQueue(), &presentInfo);
+        vkQueuePresentKHR(l_device->getPresentQueue(), &present_info);
 
         // Record time to draw
-        timings.timeToDraw = std::chrono::duration_cast<micros>(clock::now() - startDraw).count() / 1000.f;
+        timings.time_to_draw = std::chrono::duration_cast<micros>(clock::now() - start_draw).count() / 1000.f;
 
         return VK_SUCCESS;
     }
 
-    void DefaultRenderer::setupImGui(GLFWwindow *window, std::function<void()> guiDescriptor)
+    void DefaultRenderer::setupImGui(GLFWwindow *window, std::function<void()> gui_descriptor)
     {
         // Check that all the needed objects are present
-        if (lDevice == nullptr)
+        if (l_device == nullptr)
         {
             throw std::runtime_error("[DefaultRenderer] Null logical device instance");
         }
@@ -339,7 +339,7 @@ namespace framework
         {
             throw std::runtime_error("[DefaultRenderer] Null surface instance");
         }
-        if (swapChain == nullptr)
+        if (swap_chain == nullptr)
         {
             throw std::runtime_error("[DefaultRenderer] Null swapchain instance");
         }
@@ -374,49 +374,49 @@ namespace framework
             {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000},
             {VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000}};
 
-        VkDescriptorPoolCreateInfo poolInfo{};
-        poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-        poolInfo.flags |= VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-        poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
-        poolInfo.pPoolSizes = poolSizes.data();
-        poolInfo.maxSets = 1;
+        VkDescriptorPoolCreateInfo pool_info{};
+        pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+        pool_info.flags |= VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+        pool_info.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+        pool_info.pPoolSizes = poolSizes.data();
+        pool_info.maxSets = 1;
 
-        if (vkCreateDescriptorPool(lDevice->getDevice(), &poolInfo, nullptr, &guiPool) != VK_SUCCESS)
+        if (vkCreateDescriptorPool(l_device->getDevice(), &pool_info, nullptr, &gui_pool) != VK_SUCCESS)
         {
             throw std::runtime_error("[DefaultRenderer] Error creating descriptor pool for ImGui");
         }
 
         // Config all the necessary components for ImGui
-        ImGui_ImplVulkan_InitInfo initInfo{};
-        initInfo.Instance = vulkan->getInstance();
-        initInfo.PhysicalDevice = lDevice->getPhysicalDevice()->getDevice();
-        initInfo.Device = lDevice->getDevice();
-        initInfo.QueueFamily = lDevice->findQueueFamilies(surface->getSurface()).graphicsFamily.value();
-        initInfo.Queue = lDevice->getGraphicsQueue();
-        initInfo.PipelineCache = VK_NULL_HANDLE;
-        initInfo.DescriptorPool = guiPool;
-        initInfo.Allocator = nullptr;
-        initInfo.MinImageCount = lDevice->getPhysicalDevice()->getSwapChainSupportDetails().capabilities.minImageCount;
-        initInfo.ImageCount = swapChain->getImages().size();
-        initInfo.CheckVkResultFn = nullptr;
-        initInfo.RenderPass = renderPass->getRenderPass();
+        ImGui_ImplVulkan_InitInfo init_info{};
+        init_info.Instance = vulkan->getInstance();
+        init_info.PhysicalDevice = l_device->getPhysicalDevice()->getDevice();
+        init_info.Device = l_device->getDevice();
+        init_info.QueueFamily = l_device->findQueueFamilies(surface->getSurface()).graphics_family.value();
+        init_info.Queue = l_device->getGraphicsQueue();
+        init_info.PipelineCache = VK_NULL_HANDLE;
+        init_info.DescriptorPool = gui_pool;
+        init_info.Allocator = nullptr;
+        init_info.MinImageCount = l_device->getPhysicalDevice()->getSwapChainSupportDetails().capabilities.minImageCount;
+        init_info.ImageCount = swap_chain->getImages().size();
+        init_info.CheckVkResultFn = nullptr;
+        init_info.RenderPass = render_pass->getRenderPass();
 
-        ImGui_ImplVulkan_Init(&initInfo);
+        ImGui_ImplVulkan_Init(&init_info);
 
         // Active ImGui During the draw call
-        imGuiActive = true;
-        this->guiDescriptor = guiDescriptor;
+        im_gui_active = true;
+        this->gui_descriptor = gui_descriptor;
     }
 
     void DefaultRenderer::manageResize(const std::shared_ptr<Window> &window)
     {
         // Wait that the device is ready
-        lDevice->waitIdle();
+        l_device->waitIdle();
 
         // Recreate swapchain and frame buffers
-        swapChain->recreateSwapChain(window, surface->getSurface());
-        renderPass->recreateRenderPass(swapChain->getExtent(), swapChain->getFormat());
-        frameBufferCollection->recreateFrameBuffer(swapChain->getImageViews(), swapChain->getExtent(),
-                                                   renderPass->getDepthTestType(), renderPass->getDepthImageView(), renderPass->getRenderPass());
+        swap_chain->recreateSwapChain(window, surface->getSurface());
+        render_pass->recreateRenderPass(swap_chain->getExtent(), swap_chain->getFormat());
+        frame_buffer_collection->recreateFrameBuffer(swap_chain->getImageViews(), swap_chain->getExtent(),
+                                                     render_pass->getDepthTestType(), render_pass->getDepthImageView(), render_pass->getRenderPass());
     }
 }

@@ -3,9 +3,9 @@
 
 namespace framework
 {
-    CommandBuffer::CommandBuffer(const std::shared_ptr<LogicalDevice> &lDevice, const VkCommandPool &pool)
+    CommandBuffer::CommandBuffer(const std::shared_ptr<LogicalDevice> &l_device, const VkCommandPool &pool)
     {
-        if (lDevice == nullptr)
+        if (l_device == nullptr)
         {
             throw std::runtime_error("[CommandBuffer] Device instance null");
         }
@@ -15,17 +15,17 @@ namespace framework
             throw std::runtime_error("[CommandBuffer] Pool instance null");
         }
 
-        this->lDevice = lDevice;
+        this->l_device = l_device;
 
         // Create the command buffer using the created command pool
-        VkCommandBufferAllocateInfo allocInfo{};
+        VkCommandBufferAllocateInfo alloc_info{};
 
-        allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-        allocInfo.commandPool = pool;
-        allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        allocInfo.commandBufferCount = 1;
+        alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        alloc_info.commandPool = pool;
+        alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        alloc_info.commandBufferCount = 1;
 
-        if (vkAllocateCommandBuffers(lDevice->getDevice(), &allocInfo, &buffer) != VK_SUCCESS)
+        if (vkAllocateCommandBuffers(l_device->getDevice(), &alloc_info, &buffer) != VK_SUCCESS)
         {
             throw std::runtime_error("[CommandBuffer] Impossible to allocate a command buffer");
         }
@@ -33,13 +33,13 @@ namespace framework
 
     void CommandBuffer::beginRecording()
     {
-        VkCommandBufferBeginInfo beginInfo{};
+        VkCommandBufferBeginInfo begin_info{};
 
-        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-        beginInfo.flags = 0;
-        beginInfo.pInheritanceInfo = nullptr;
+        begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        begin_info.flags = 0;
+        begin_info.pInheritanceInfo = nullptr;
 
-        if (vkBeginCommandBuffer(buffer, &beginInfo) != VK_SUCCESS)
+        if (vkBeginCommandBuffer(buffer, &begin_info) != VK_SUCCESS)
         {
             throw std::runtime_error("[CommandBuffer] Impossible to begin recording");
         }

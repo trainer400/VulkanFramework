@@ -6,16 +6,16 @@
 
 namespace framework
 {
-    Camera::Camera(float fovY, float nearPlane, float farPlane)
+    Camera::Camera(float fov_y, float near_plane, float far_plane)
     {
-        if (nearPlane <= 0 || farPlane <= 0 || nearPlane == farPlane)
+        if (near_plane <= 0 || far_plane <= 0 || near_plane == far_plane)
         {
             throw std::runtime_error("[Camera] Bad near/far plane");
         }
 
-        this->nearPlane = nearPlane;
-        this->farPlane = farPlane;
-        this->fovy = fovY;
+        this->near_plane = near_plane;
+        this->far_plane = far_plane;
+        this->fovy = fov_y;
     }
 
     void Camera::setDirection(float yaw, float pitch)
@@ -42,7 +42,7 @@ namespace framework
 
     glm::mat4 Camera::getPerspectiveMatrix(uint32_t width, uint32_t height)
     {
-        glm::mat4 prj = glm::perspective(glm::radians(fovy), width / (float)height, nearPlane, farPlane);
+        glm::mat4 prj = glm::perspective(glm::radians(fovy), width / (float)height, near_plane, far_plane);
         // Conversion from GL to Vulkan, Y axis inverted
         prj[1][1] *= -1;
         return prj;

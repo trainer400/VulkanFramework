@@ -12,7 +12,7 @@ namespace framework
     class Texture : public DescriptorElement
     {
     public:
-        Texture(const std::shared_ptr<LogicalDevice> &lDevice, const VkCommandPool &pool, const char *filename, uint32_t bindingIndex);
+        Texture(const std::shared_ptr<LogicalDevice> &l_device, const VkCommandPool &pool, const char *filename, uint32_t binding_index);
         ~Texture();
 
         // Getters
@@ -29,7 +29,7 @@ namespace framework
         /**
          * @brief Creates the corresponding image view for the created depth image
          */
-        void createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, VkImageView &view);
+        void createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspect_flags, VkImageView &view);
 
         /**
          * @brief Copies a buffer content into the specified image
@@ -39,41 +39,41 @@ namespace framework
         /**
          * @brief Transforms the layout of an image into a new one
          */
-        void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+        void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout old_layout, VkImageLayout new_layout);
 
         /**
          * @brief Allocates the image inside the memory
          */
-        void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage &image, VkDeviceMemory &imageMemory);
+        void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage &image, VkDeviceMemory &image_memory);
 
         /**
          * @brief Allocates a buffer of the passed size, for the passed usage and with the correct properties to the vkBuffer reference
          */
-        void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer &buffer, VkDeviceMemory &bufferMemory);
+        void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer &buffer, VkDeviceMemory &buffer_memory);
 
         /**
          * @brief Looks for the memory on the GPU that suits the passed parameters
          */
-        uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags flags);
+        uint32_t findMemoryType(uint32_t type_filter, VkMemoryPropertyFlags flags);
 
         // Buffer to transfer the image to the GPU
-        VkBuffer stagingBuffer;
-        VkDeviceMemory stagingBufferMemory;
+        VkBuffer staging_buffer;
+        VkDeviceMemory staging_buffer_memory;
 
         // Actual image
-        VkImage textureImage;
-        VkDeviceMemory textureImageMemory;
-        VkDescriptorImageInfo imageInfo{};
+        VkImage texture_image;
+        VkDeviceMemory texture_image_memory;
+        VkDescriptorImageInfo image_info{};
 
         // Image view
-        VkImageView textureImageView;
+        VkImageView texture_image_view;
 
         // Image sampler
-        VkSampler textureSampler;
+        VkSampler texture_sampler;
 
         // Framework objects
-        std::shared_ptr<LogicalDevice> lDevice;
-        std::unique_ptr<CommandBuffer> commandBuffer;
+        std::shared_ptr<LogicalDevice> l_device;
+        std::unique_ptr<CommandBuffer> command_buffer;
 
         // Image info
         int width, height, channels;

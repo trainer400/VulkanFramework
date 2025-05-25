@@ -25,7 +25,7 @@ namespace framework
             I1 = VK_FORMAT_R32_UINT
         };
 
-        VertexAttributes(const std::vector<DrawableAttribute> &vertexAttributes) : attributes(vertexAttributes) {}
+        VertexAttributes(const std::vector<DrawableAttribute> &vertex_attributes) : attributes(vertex_attributes) {}
         VertexAttributes(const VertexAttributes &other) { this->attributes = other.attributes; }
         VertexAttributes(const VertexAttributes &&other) = delete;
 

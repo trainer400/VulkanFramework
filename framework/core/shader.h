@@ -19,7 +19,7 @@ namespace framework
     class Shader
     {
     public:
-        Shader(const std::shared_ptr<LogicalDevice> &lDevice, const char *filename, ShaderType type);
+        Shader(const std::shared_ptr<LogicalDevice> &l_device, const char *filename, ShaderType type);
         ~Shader();
 
         // Getters
@@ -27,10 +27,10 @@ namespace framework
         VkShaderStageFlagBits getShaderStage();
 
     private:
-        std::shared_ptr<LogicalDevice> lDevice;
+        std::shared_ptr<LogicalDevice> l_device;
 
         VkShaderModule shader = VK_NULL_HANDLE;
-        std::vector<char> fileBuffer;
+        std::vector<char> file_buffer;
 
         ShaderType type;
     };

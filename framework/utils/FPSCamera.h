@@ -10,18 +10,18 @@ namespace framework
 {
     struct FPSCameraKeyBindings
     {
-        uint32_t forwardKey = GLFW_KEY_W;
-        uint32_t backwardKey = GLFW_KEY_S;
-        uint32_t leftKey = GLFW_KEY_A;
-        uint32_t rightKey = GLFW_KEY_D;
-        uint32_t upKey = GLFW_KEY_SPACE;
-        uint32_t downKey = GLFW_KEY_LEFT_SHIFT;
+        uint32_t forward_key = GLFW_KEY_W;
+        uint32_t backward_key = GLFW_KEY_S;
+        uint32_t left_key = GLFW_KEY_A;
+        uint32_t right_key = GLFW_KEY_D;
+        uint32_t up_key = GLFW_KEY_SPACE;
+        uint32_t down_key = GLFW_KEY_LEFT_SHIFT;
     };
 
     class FPSCamera
     {
     public:
-        FPSCamera(float velocity, int fovY, float nearPlane, float farPlane, FPSCameraKeyBindings bindings);
+        FPSCamera(float velocity, int fov_y, float near_plane, float far_plane, FPSCameraKeyBindings bindings);
         ~FPSCamera();
 
         /**

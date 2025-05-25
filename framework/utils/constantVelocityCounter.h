@@ -31,7 +31,7 @@ namespace framework
 
     private:
         bool counting = false;
-        std::chrono::_V2::system_clock::time_point lastUpdate;
+        std::chrono::_V2::system_clock::time_point last_update;
 
         float velocity;
         float position = 0;

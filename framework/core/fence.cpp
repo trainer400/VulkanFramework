@@ -5,23 +5,23 @@ using namespace std;
 
 namespace framework
 {
-    Fence::Fence(shared_ptr<LogicalDevice> lDevice, bool signaled)
+    Fence::Fence(shared_ptr<LogicalDevice> l_device, bool signaled)
     {
-        if (lDevice == nullptr)
+        if (l_device == nullptr)
         {
             throw runtime_error("[Fence] Null logical device instance");
         }
 
-        this->lDevice = lDevice;
+        this->l_device = l_device;
 
         // Create the vulkan fence object
-        VkFenceCreateInfo fenceInfo{};
-        fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+        VkFenceCreateInfo fence_info{};
+        fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 
         // Create the fence with the first state signaled depending on the bool value
-        fenceInfo.flags = signaled ? VK_FENCE_CREATE_SIGNALED_BIT : 0;
+        fence_info.flags = signaled ? VK_FENCE_CREATE_SIGNALED_BIT : 0;
 
-        if (vkCreateFence(lDevice->getDevice(), &fenceInfo, nullptr, &fence) != VK_SUCCESS)
+        if (vkCreateFence(l_device->getDevice(), &fence_info, nullptr, &fence) != VK_SUCCESS)
         {
             throw std::runtime_error("[Vulkan] Impossible to create sync objects");
         }
@@ -29,9 +29,9 @@ namespace framework
 
     Fence::~Fence()
     {
-        if (lDevice != nullptr)
+        if (l_device != nullptr)
         {
-            vkDestroyFence(lDevice->getDevice(), fence, nullptr);
+            vkDestroyFence(l_device->getDevice(), fence, nullptr);
         }
     }
 }

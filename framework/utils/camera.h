@@ -13,7 +13,7 @@ namespace framework
     class Camera
     {
     public:
-        Camera(float fovY, float nearPlane, float farPlane);
+        Camera(float fov_y, float near_plane, float far_plane);
 
         // Setters
         inline void setPosition(const glm::vec3 &position) { this->position = position; }
@@ -28,9 +28,6 @@ namespace framework
         glm::vec3 getDirection() { return direction; }
 
     private:
-        // Vector that indicates the upper axis of rotation for the camera
-        glm::vec3 rotationAxis;
-
         // Position in the space
         glm::vec3 position{0, 0, 0};
 
@@ -38,6 +35,6 @@ namespace framework
         glm::vec3 direction{0, 0, 1};
 
         // Perspective parameters
-        float fovy = 45, nearPlane = 0, farPlane = 0;
+        float fovy = 45, near_plane = 0, far_plane = 0;
     };
 }

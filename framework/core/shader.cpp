@@ -2,19 +2,19 @@
 #include <fstream>
 namespace framework
 {
-    Shader::Shader(const std::shared_ptr<LogicalDevice> &lDevice, const char *filename, ShaderType type) : type(type)
+    Shader::Shader(const std::shared_ptr<LogicalDevice> &l_device, const char *filename, ShaderType type) : type(type)
     {
         if (filename == nullptr)
         {
             throw std::runtime_error("[Shader] Null filename");
         }
 
-        if (lDevice == nullptr)
+        if (l_device == nullptr)
         {
             throw std::runtime_error("[Shader] Null device instance");
         }
 
-        this->lDevice = lDevice;
+        this->l_device = l_device;
 
         // Open the file. Ate reads the file from the end (to retrieve the dimensions)
         std::ifstream file(filename, std::ios::ate | std::ios::binary);
@@ -25,24 +25,24 @@ namespace framework
             throw std::runtime_error("[Shader] File open failure");
         }
 
-        size_t fileSize = (size_t)file.tellg();
+        size_t file_size = (size_t)file.tellg();
 
         // Size the buffer as the dimension of the file
-        fileBuffer.resize(fileSize);
+        file_buffer.resize(file_size);
 
         // Position the pointer to the beginning of the file
         file.seekg(0);
 
         // Read the entire buffer
-        file.read(fileBuffer.data(), fileSize);
+        file.read(file_buffer.data(), file_size);
 
-        VkShaderModuleCreateInfo createInfo{};
+        VkShaderModuleCreateInfo create_info{};
 
-        createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-        createInfo.codeSize = fileBuffer.size();
-        createInfo.pCode = reinterpret_cast<const uint32_t *>(fileBuffer.data());
+        create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+        create_info.codeSize = file_buffer.size();
+        create_info.pCode = reinterpret_cast<const uint32_t *>(file_buffer.data());
 
-        if (vkCreateShaderModule(lDevice->getDevice(), &createInfo, nullptr, &shader) != VK_SUCCESS)
+        if (vkCreateShaderModule(l_device->getDevice(), &create_info, nullptr, &shader) != VK_SUCCESS)
         {
             throw std::runtime_error("[Shader] Impossible to create the shader");
         }
@@ -52,7 +52,7 @@ namespace framework
 
     Shader::~Shader()
     {
-        vkDestroyShaderModule(lDevice->getDevice(), shader, nullptr);
+        vkDestroyShaderModule(l_device->getDevice(), shader, nullptr);
     }
 
     VkShaderStageFlagBits Shader::getShaderStage()

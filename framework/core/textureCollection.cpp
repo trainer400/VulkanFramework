@@ -1,7 +1,8 @@
-#include "texture.h"
+#include "textureCollection.h"
 
 #include <stdexcept>
 #include <cstring>
+#include <iostream>
 
 #ifndef STBI_INCLUDE_STB_IMAGE_H
 #define STB_IMAGE_IMPLEMENTATION
@@ -10,7 +11,7 @@
 
 namespace framework
 {
-    Texture::Texture(const std::shared_ptr<LogicalDevice> &l_device, const VkCommandPool &pool, const char *filename, uint32_t binding_index)
+    TextureCollection::TextureCollection(const std::shared_ptr<LogicalDevice> &l_device, const VkCommandPool &pool, const std::vector<std::string> &filenames, uint32_t binding_index)
         : DescriptorElement(binding_index)
     {
         if (l_device == nullptr)
@@ -18,9 +19,9 @@ namespace framework
             throw std::runtime_error("[Texture] Null logical device instance");
         }
 
-        if (filename == nullptr)
+        if (filenames.size() == 0)
         {
-            throw std::runtime_error("[Texture] Null filename");
+            throw std::runtime_error("[Texture] Null filenames");
         }
 
         if (pool == nullptr)
@@ -31,101 +32,124 @@ namespace framework
         this->l_device = l_device;
         command_buffer = std::make_unique<CommandBuffer>(l_device, pool);
 
-        // Open the image
-        stbi_uc *pixels = stbi_load(filename, &width, &height, &channels, STBI_rgb_alpha);
-
-        // 4 = RGB + Alpha
-        VkDeviceSize image_size = width * height * 4;
-
-        if (!pixels)
+        // Reserve the vector space for the requested number of textures
+        for (size_t i = 0; i < filenames.size(); i++)
         {
-            throw std::runtime_error("[Texture] Error opening texture image");
+            textures.push_back(TextureDescriptor{});
+            image_infos.push_back(VkDescriptorImageInfo{});
         }
 
-        // Create the staging buffer and copy the image inside
-        createBuffer(image_size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                     staging_buffer, staging_buffer_memory);
-
-        // Map the buffer and transfer the image
-        void *data;
-        vkMapMemory(l_device->getDevice(), staging_buffer_memory, 0, image_size, 0, &data);
-
-        // Transfer the memory
-        memcpy(data, pixels, static_cast<size_t>(image_size));
-
-        // Unmap the memory
-        vkUnmapMemory(l_device->getDevice(), staging_buffer_memory);
-
-        // Create the actual image in memory
-        createImage(width, height, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL,
-                    VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-                    VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                    texture_image, texture_image_memory);
-
-        // Transition the image into the optimal transfer layout
-        transitionImageLayout(texture_image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-
-        // Copy the buffer into the image
-        copyBufferToImage(staging_buffer, texture_image, static_cast<uint32_t>(width), static_cast<uint32_t>(height));
-
-        // Transfer the layout to be read only optimal
-        transitionImageLayout(texture_image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-
-        // Create the image view
-        createImageView(texture_image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, texture_image_view);
-
-        // Create the texture sampler TODO make this more configurable
-        createSampler(texture_sampler);
-
-        // Set the image info
-        image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        image_info.imageView = texture_image_view;
-        image_info.sampler = texture_sampler;
-
-        // Clean up the pixel array at the end
-        stbi_image_free(pixels);
-    }
-
-    Texture::~Texture()
-    {
-        if (staging_buffer != VK_NULL_HANDLE)
+        // Create and store the textures on the GPU
+        for (size_t i = 0; i < filenames.size(); i++)
         {
+            const std::string &name = filenames[i];
+            TextureDescriptor &descriptor = textures[i];
+            VkDescriptorImageInfo &image_info = image_infos[i];
+
+            // Open the image
+            stbi_uc *pixels = stbi_load(name.c_str(), &width, &height, &channels, STBI_rgb_alpha);
+
+            // 4 = RGB + Alpha
+            VkDeviceSize image_size = width * height * 4;
+
+            if (!pixels)
+            {
+                throw std::runtime_error("[Texture] Error opening texture image");
+            }
+
+            // Buffer to transfer the image to the GPU
+            VkBuffer staging_buffer;
+            VkDeviceMemory staging_buffer_memory;
+
+            // Image structs
+            VkImageView texture_image_view;
+            VkSampler texture_sampler;
+
+            // Create the staging buffer and copy the image inside
+            createBuffer(image_size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                         staging_buffer, staging_buffer_memory);
+
+            // Map the buffer and transfer the image
+            void *data;
+            vkMapMemory(l_device->getDevice(), staging_buffer_memory, 0, image_size, 0, &data);
+
+            // Transfer the memory
+            memcpy(data, pixels, static_cast<size_t>(image_size));
+
+            // Unmap the memory
+            vkUnmapMemory(l_device->getDevice(), staging_buffer_memory);
+
+            // Create the actual image in memory
+            createImage(width, height, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL,
+                        VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+                        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                        descriptor.texture_image, descriptor.texture_image_memory);
+
+            // Transition the image into the optimal transfer layout
+            transitionImageLayout(descriptor.texture_image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+
+            // Copy the buffer into the image
+            copyBufferToImage(staging_buffer, descriptor.texture_image, static_cast<uint32_t>(width), static_cast<uint32_t>(height));
+
+            // Remove the intermediate created buffer
             vkDestroyBuffer(l_device->getDevice(), staging_buffer, nullptr);
-        }
-
-        if (staging_buffer_memory != VK_NULL_HANDLE)
-        {
             vkFreeMemory(l_device->getDevice(), staging_buffer_memory, nullptr);
-        }
 
-        if (texture_image != VK_NULL_HANDLE)
-        {
-            vkDestroyImage(l_device->getDevice(), texture_image, nullptr);
-        }
+            // Transfer the layout to be read only optimal
+            transitionImageLayout(descriptor.texture_image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
-        if (texture_image_memory != VK_NULL_HANDLE)
-        {
-            vkFreeMemory(l_device->getDevice(), texture_image_memory, nullptr);
-        }
+            // Create the image view
+            createImageView(descriptor.texture_image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, texture_image_view);
 
-        if (texture_image_view != VK_NULL_HANDLE)
-        {
-            vkDestroyImageView(l_device->getDevice(), texture_image_view, nullptr);
-        }
+            // Create the texture sampler TODO make this more configurable
+            createSampler(texture_sampler);
 
-        if (texture_sampler != VK_NULL_HANDLE)
-        {
-            vkDestroySampler(l_device->getDevice(), texture_sampler, nullptr);
+            // Set the image info
+            image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            image_info.imageView = texture_image_view;
+            image_info.sampler = texture_sampler;
+
+            // Clean up the pixel array at the end
+            stbi_image_free(pixels);
         }
     }
 
-    const VkDescriptorSetLayoutBinding Texture::getDescriptorSetLayoutBinding()
+    TextureCollection::~TextureCollection()
+    {
+        for (size_t i = 0; i < textures.size(); i++)
+        {
+            TextureDescriptor &texture = textures[i];
+            VkDescriptorImageInfo &image_info = image_infos[i];
+
+            if (texture.texture_image != VK_NULL_HANDLE)
+            {
+                vkDestroyImage(l_device->getDevice(), texture.texture_image, nullptr);
+            }
+
+            if (texture.texture_image_memory != VK_NULL_HANDLE)
+            {
+                vkFreeMemory(l_device->getDevice(), texture.texture_image_memory, nullptr);
+            }
+
+            if (image_info.imageView != VK_NULL_HANDLE)
+            {
+                vkDestroyImageView(l_device->getDevice(), image_info.imageView, nullptr);
+            }
+
+            if (image_info.sampler != VK_NULL_HANDLE)
+            {
+                vkDestroySampler(l_device->getDevice(), image_info.sampler, nullptr);
+            }
+        }
+    }
+
+    const VkDescriptorSetLayoutBinding TextureCollection::getDescriptorSetLayoutBinding()
     {
         VkDescriptorSetLayoutBinding layout_binding{};
 
         layout_binding.binding = binding_index;
-        layout_binding.descriptorCount = 1;
+        layout_binding.descriptorCount = textures.size();
         layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
         layout_binding.pImmutableSamplers = nullptr;
         layout_binding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -133,17 +157,17 @@ namespace framework
         return layout_binding;
     }
 
-    const VkDescriptorPoolSize Texture::getPoolSize()
+    const VkDescriptorPoolSize TextureCollection::getPoolSize()
     {
         VkDescriptorPoolSize pool_size{};
 
         pool_size.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        pool_size.descriptorCount = 1;
+        pool_size.descriptorCount = textures.size();
 
         return pool_size;
     }
 
-    const VkWriteDescriptorSet Texture::getWriteDescriptorSet()
+    const VkWriteDescriptorSet TextureCollection::getWriteDescriptorSet()
     {
         VkWriteDescriptorSet write_descriptor{};
 
@@ -151,13 +175,13 @@ namespace framework
         write_descriptor.dstBinding = binding_index;
         write_descriptor.dstArrayElement = 0;
         write_descriptor.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        write_descriptor.descriptorCount = 1;
-        write_descriptor.pImageInfo = &image_info;
+        write_descriptor.descriptorCount = textures.size();
+        write_descriptor.pImageInfo = image_infos.data();
 
         return write_descriptor;
     }
 
-    void Texture::createSampler(VkSampler &sampler)
+    void TextureCollection::createSampler(VkSampler &sampler)
     {
         // Get the physical device properties to check the maximum anisotropic filtering
         VkPhysicalDeviceProperties properties{};
@@ -191,13 +215,13 @@ namespace framework
         sampler_info.minLod = 0.0f;
         sampler_info.maxLod = 0.0f;
 
-        if (vkCreateSampler(l_device->getDevice(), &sampler_info, nullptr, &texture_sampler) != VK_SUCCESS)
+        if (vkCreateSampler(l_device->getDevice(), &sampler_info, nullptr, &sampler) != VK_SUCCESS)
         {
             throw std::runtime_error("[Texture] Impossible to crete texture sampler");
         }
     }
 
-    void Texture::createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspect_flags, VkImageView &view)
+    void TextureCollection::createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspect_flags, VkImageView &view)
     {
         VkImageViewCreateInfo create_info{};
 
@@ -219,7 +243,7 @@ namespace framework
         }
     }
 
-    void Texture::copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height)
+    void TextureCollection::copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height)
     {
         // Reset the command buffer for new sequence of commands
         vkResetCommandBuffer(command_buffer->getCommandBuffer(), 0);
@@ -260,7 +284,7 @@ namespace framework
         vkQueueWaitIdle(l_device->getGraphicsQueue());
     }
 
-    void Texture::transitionImageLayout(VkImage image, VkFormat format, VkImageLayout old_layout, VkImageLayout new_layout)
+    void TextureCollection::transitionImageLayout(VkImage image, VkFormat format, VkImageLayout old_layout, VkImageLayout new_layout)
     {
         // Reset the command buffer for new sequence of commands
         vkResetCommandBuffer(command_buffer->getCommandBuffer(), 0);
@@ -327,7 +351,7 @@ namespace framework
         vkQueueWaitIdle(l_device->getGraphicsQueue());
     }
 
-    void Texture::createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage &image, VkDeviceMemory &image_memory)
+    void TextureCollection::createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage &image, VkDeviceMemory &image_memory)
     {
         VkImageCreateInfo image_info{};
         image_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -365,7 +389,7 @@ namespace framework
         vkBindImageMemory(l_device->getDevice(), image, image_memory, 0);
     }
 
-    void Texture::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer &buffer, VkDeviceMemory &buffer_memory)
+    void TextureCollection::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer &buffer, VkDeviceMemory &buffer_memory)
     {
         // Create vertex buffer
         VkBufferCreateInfo buffer_info{};
@@ -400,7 +424,7 @@ namespace framework
         vkBindBufferMemory(l_device->getDevice(), buffer, buffer_memory, 0);
     }
 
-    uint32_t Texture::findMemoryType(uint32_t type_filter, VkMemoryPropertyFlags properties)
+    uint32_t TextureCollection::findMemoryType(uint32_t type_filter, VkMemoryPropertyFlags properties)
     {
         VkPhysicalDeviceMemoryProperties memory_properties;
 

@@ -5,10 +5,10 @@
 
 namespace framework
 {
-    DrawableCollection::DrawableCollection(const std::shared_ptr<LogicalDevice> &lDevice, std::unique_ptr<DescriptorSet> descriptor, const VkCommandPool &pool, const std::vector<std::shared_ptr<Shader>> &shaders)
+    DrawableCollection::DrawableCollection(const std::shared_ptr<LogicalDevice> &l_device, std::unique_ptr<DescriptorSet> descriptor, const VkCommandPool &pool, const std::vector<std::shared_ptr<Shader>> &shaders)
         : shaders(shaders)
     {
-        if (lDevice == nullptr)
+        if (l_device == nullptr)
         {
             throw std::runtime_error("[DrawableCollection] Null logical device");
         }
@@ -18,17 +18,17 @@ namespace framework
             throw std::runtime_error("[DrawableCollection] Null command pool instance");
         }
 
-        this->lDevice = lDevice;
-        this->descriptorSet = std::move(descriptor);
+        this->l_device = l_device;
+        this->descriptor_set = std::move(descriptor);
 
         // Create the command buffer
-        commandBuffer = std::make_unique<CommandBuffer>(lDevice, pool);
+        command_buffer = std::make_unique<CommandBuffer>(l_device, pool);
 
         // Create the fence for memory transfer
-        VkFenceCreateInfo fenceInfo{};
-        fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+        VkFenceCreateInfo fence_info{};
+        fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 
-        if (vkCreateFence(lDevice->getDevice(), &fenceInfo, nullptr, &copyFence) != VK_SUCCESS)
+        if (vkCreateFence(l_device->getDevice(), &fence_info, nullptr, &copy_fence) != VK_SUCCESS)
         {
             throw std::runtime_error("[DrawableCollection] Error creating copy fence");
         }
@@ -36,49 +36,49 @@ namespace framework
 
     DrawableCollection::~DrawableCollection()
     {
-        if (vertexStagingBuffer != VK_NULL_HANDLE)
+        if (vertex_staging_buffer != VK_NULL_HANDLE)
         {
-            vkDestroyBuffer(lDevice->getDevice(), vertexStagingBuffer, nullptr);
+            vkDestroyBuffer(l_device->getDevice(), vertex_staging_buffer, nullptr);
         }
 
-        if (vertexStagingBufferMemory != VK_NULL_HANDLE)
+        if (vertex_staging_buffer_memory != VK_NULL_HANDLE)
         {
-            vkFreeMemory(lDevice->getDevice(), vertexStagingBufferMemory, nullptr);
+            vkFreeMemory(l_device->getDevice(), vertex_staging_buffer_memory, nullptr);
         }
 
-        if (indexStagingBuffer != VK_NULL_HANDLE)
+        if (index_staging_buffer != VK_NULL_HANDLE)
         {
-            vkDestroyBuffer(lDevice->getDevice(), indexStagingBuffer, nullptr);
+            vkDestroyBuffer(l_device->getDevice(), index_staging_buffer, nullptr);
         }
 
-        if (indexStagingBufferMemory != VK_NULL_HANDLE)
+        if (index_staging_buffer_memory != VK_NULL_HANDLE)
         {
-            vkFreeMemory(lDevice->getDevice(), indexStagingBufferMemory, nullptr);
+            vkFreeMemory(l_device->getDevice(), index_staging_buffer_memory, nullptr);
         }
 
-        if (vertexBuffer != VK_NULL_HANDLE)
+        if (vertex_buffer != VK_NULL_HANDLE)
         {
-            vkDestroyBuffer(lDevice->getDevice(), vertexBuffer, nullptr);
+            vkDestroyBuffer(l_device->getDevice(), vertex_buffer, nullptr);
         }
 
-        if (vertexBufferMemory != VK_NULL_HANDLE)
+        if (vertex_buffer_memory != VK_NULL_HANDLE)
         {
-            vkFreeMemory(lDevice->getDevice(), vertexBufferMemory, nullptr);
+            vkFreeMemory(l_device->getDevice(), vertex_buffer_memory, nullptr);
         }
 
-        if (indexBuffer != VK_NULL_HANDLE)
+        if (index_buffer != VK_NULL_HANDLE)
         {
-            vkDestroyBuffer(lDevice->getDevice(), indexBuffer, nullptr);
+            vkDestroyBuffer(l_device->getDevice(), index_buffer, nullptr);
         }
 
-        if (indexBufferMemory != VK_NULL_HANDLE)
+        if (index_buffer_memory != VK_NULL_HANDLE)
         {
-            vkFreeMemory(lDevice->getDevice(), indexBufferMemory, nullptr);
+            vkFreeMemory(l_device->getDevice(), index_buffer_memory, nullptr);
         }
 
-        if (copyFence != VK_NULL_HANDLE)
+        if (copy_fence != VK_NULL_HANDLE)
         {
-            vkDestroyFence(lDevice->getDevice(), copyFence, nullptr);
+            vkDestroyFence(l_device->getDevice(), copy_fence, nullptr);
         }
     }
 
@@ -91,27 +91,27 @@ namespace framework
 
         if (!allocated)
         {
+            // In case of empty vertex attributes, use the ones with the new element
+            if (elements.size() == 0)
+            {
+                attributes = std::make_unique<VertexAttributes>(element->getVertexAttributes());
+            }
+
+            // Check that the new element has the same vertex attributes of the other ones in the collection
+            if (!(*attributes.get() == element->getVertexAttributes()))
+            {
+                throw std::runtime_error("[DrawableCollection] New element vertex attributes differ from exsiting elements inside the collection");
+            }
+
             elements.push_back(element);
 
             // Increase the counters
-            vertexSize += element->getVertices().size();
-            indicesSize += element->getIndices().size();
+            vertices_size += element->getVertices().size();
+            indices_size += element->getIndices().size();
         }
         else
         {
             throw std::runtime_error("[DrawableCollection] The buffer has already been allocated");
-        }
-    }
-
-    void DrawableCollection::addAttribute(DrawableAttribute attribute)
-    {
-        if (!allocated)
-        {
-            attributes.push_back(attribute);
-        }
-        else
-        {
-            throw std::runtime_error("[DrawableCollection] Buffer already allocated");
         }
     }
 
@@ -122,12 +122,17 @@ namespace framework
             throw std::runtime_error("[DrawableCollection] The buffer has already been allocated");
         }
 
+        if (elements.size() == 0)
+        {
+            throw std::runtime_error("[DrawableCollection] Allocate function called but empty element list");
+        }
+
         // Set the allocated flag
         allocated = true;
 
         // Get the size in bytes of the struct
-        int sizeOfStruct = getAttributesSum();
-        int vertexIndex = 0;
+        int size_of_struct = getAttributesSum();
+        int vertex_index = 0;
 
         // Allocate the vectors befor creating the Vulkan buffer
         for (int i = 0; i < elements.size(); i++)
@@ -141,67 +146,67 @@ namespace framework
             // Manipulate the indices before inserting them into the vector
             for (int j = 0; j < index.size(); j++)
             {
-                indices.push_back(index[j] + vertexIndex / sizeOfStruct);
+                indices.push_back(index[j] + vertex_index / size_of_struct);
             }
 
             // Update the indices
-            vertexIndex += vertex.size();
+            vertex_index += vertex.size();
         }
 
-        VkDeviceSize vertexBufferSize = sizeof(vertices[0]) * vertices.size();
-        VkDeviceSize indexBufferSize = sizeof(indices[0]) * indices.size();
+        VkDeviceSize vertex_buffer_size = sizeof(vertices[0]) * vertices.size();
+        VkDeviceSize index_buffer_size = sizeof(indices[0]) * indices.size();
 
-        createBuffer(vertexBufferSize,
+        createBuffer(vertex_buffer_size,
                      VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                     vertexStagingBuffer, vertexStagingBufferMemory);
+                     vertex_staging_buffer, vertex_staging_buffer_memory);
 
-        createBuffer(indexBufferSize,
+        createBuffer(index_buffer_size,
                      VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                     indexStagingBuffer, indexStagingBufferMemory);
+                     index_staging_buffer, index_staging_buffer_memory);
 
-        createBuffer(vertexBufferSize,
+        createBuffer(vertex_buffer_size,
                      VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
                      VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                     vertexBuffer, vertexBufferMemory);
+                     vertex_buffer, vertex_buffer_memory);
 
-        createBuffer(indexBufferSize,
+        createBuffer(index_buffer_size,
                      VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
                      VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                     indexBuffer, indexBufferMemory);
+                     index_buffer, index_buffer_memory);
 
         // Fill the vertex buffer
         void *data;
 
         // Map the GPU memory into the RAM
-        vkMapMemory(lDevice->getDevice(), vertexStagingBufferMemory, 0, vertexBufferSize, 0, &data);
+        vkMapMemory(l_device->getDevice(), vertex_staging_buffer_memory, 0, vertex_buffer_size, 0, &data);
 
         // Copy the data to the shared memory
-        memcpy(data, vertices.data(), (size_t)vertexBufferSize);
+        memcpy(data, vertices.data(), (size_t)vertex_buffer_size);
 
         // Unmap the shared memory
-        vkUnmapMemory(lDevice->getDevice(), vertexStagingBufferMemory);
+        vkUnmapMemory(l_device->getDevice(), vertex_staging_buffer_memory);
 
         // Fill the index buffer
-        vkMapMemory(lDevice->getDevice(), indexStagingBufferMemory, 0, indexBufferSize, 0, &data);
+        vkMapMemory(l_device->getDevice(), index_staging_buffer_memory, 0, index_buffer_size, 0, &data);
 
         // Copy the data to the shared memory
-        memcpy(data, indices.data(), (size_t)indexBufferSize);
+        memcpy(data, indices.data(), (size_t)index_buffer_size);
 
         // Unmap the shared memory
-        vkUnmapMemory(lDevice->getDevice(), indexStagingBufferMemory);
+        vkUnmapMemory(l_device->getDevice(), index_staging_buffer_memory);
 
         // Transfer the data from staging area to the GPU memory
-        transferMemoryToGPU(vertexBufferSize, vertexStagingBuffer, vertexBuffer, 0, 0);
-        transferMemoryToGPU(indexBufferSize, indexStagingBuffer, indexBuffer, 0, 0);
+        transferMemoryToGPU(vertex_buffer_size, vertex_staging_buffer, vertex_buffer, 0, 0);
+        transferMemoryToGPU(index_buffer_size, index_staging_buffer, index_buffer, 0, 0);
     }
 
     void DrawableCollection::updateElements()
     {
-        int vertexIndex = 0;
-        int elementIndex = 0;
-        int sizeOfAttributes = getAttributesSum();
+        int vertex_index = 0;
+        int element_index = 0;
+        int size_of_attributes = getAttributesSum();
 
         int vSize = 0, eSize = 0;
 
@@ -214,43 +219,43 @@ namespace framework
             if (elements[i]->isUpdated())
             {
                 // Save the reference of the two vectors
-                const std::vector<float> v = elements[i]->getVertices();
+                const std::vector<float> &v = elements[i]->getVertices();
 
                 // Copy the new changed vertices inside the vertex vector
                 for (int j = 0; j < v.size(); j++)
                 {
-                    vertices[j + vertexIndex] = v[j];
+                    vertices[j + vertex_index] = v[j];
                 }
 
                 // Compute the byte offset
-                VkDeviceSize verticesOffset = vertexIndex * sizeof(float);
+                VkDeviceSize verticesOffset = vertex_index * sizeof(float);
                 VkDeviceSize verticesSize = v.size() * sizeof(float);
 
                 // Map the changes inside the staging buffer
                 void *data;
 
                 // Map the GPU memory into the RAM
-                vkMapMemory(lDevice->getDevice(), vertexStagingBufferMemory, verticesOffset, verticesSize, 0, &data);
+                vkMapMemory(l_device->getDevice(), vertex_staging_buffer_memory, verticesOffset, verticesSize, 0, &data);
 
                 // Copy the data to the GPU memory
-                memcpy(data, &vertices.data()[vertexIndex], (size_t)verticesSize);
+                memcpy(data, &vertices.data()[vertex_index], (size_t)verticesSize);
 
                 // Unmap the GPU memory
-                vkUnmapMemory(lDevice->getDevice(), vertexStagingBufferMemory);
+                vkUnmapMemory(l_device->getDevice(), vertex_staging_buffer_memory);
 
                 // Transfer the change into the GPU memory
-                transferMemoryToGPU(verticesSize, vertexStagingBuffer, vertexBuffer, verticesOffset, verticesOffset);
+                transferMemoryToGPU(verticesSize, vertex_staging_buffer, vertex_buffer, verticesOffset, verticesOffset);
 
                 // Flag the element as updated
                 elements[i]->setUpdated();
             }
 
-            vertexIndex += elements[i]->getVertices().size();
-            elementIndex += elements[i]->getIndices().size();
+            vertex_index += elements[i]->getVertices().size();
+            element_index += elements[i]->getIndices().size();
         }
 
         // The array dimensions is changed
-        if (vSize != vertexSize || eSize != indicesSize)
+        if (vSize != vertices_size || eSize != indices_size)
         {
             throw std::runtime_error("[DrawableCollection] Changed vertices of elements size");
         }
@@ -261,13 +266,13 @@ namespace framework
         VkVertexInputBindingDescription result{};
 
         // Collect the size of the overall struct
-        int sizeOfStruct = getAttributesSum();
+        int size_of_struct = getAttributesSum();
 
         // Data is populated only if the buffer has been allocated
         if (allocated)
         {
             result.binding = 0;
-            result.stride = sizeOfStruct * sizeof(float);
+            result.stride = size_of_struct * sizeof(float);
             // TODO make this configurable ?
             result.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
         }
@@ -283,28 +288,29 @@ namespace framework
         if (allocated)
         {
             uint32_t offset = 0;
-            for (int i = 0; i < attributes.size(); i++)
+            for (int i = 0; i < attributes->getVertexAttributes().size(); i++)
             {
                 VkVertexInputAttributeDescription description{};
 
                 description.binding = 0;
                 description.location = i;
-                description.format = static_cast<VkFormat>(attributes[i]);
+                description.format = static_cast<VkFormat>(attributes->getVertexAttributes()[i]);
                 description.offset = offset;
 
                 // Update the offset
-                switch (attributes[i])
+                switch (attributes->getVertexAttributes()[i])
                 {
-                case F1:
+                case VertexAttributes::DrawableAttribute::F1:
+                case VertexAttributes::DrawableAttribute::I1:
                     offset += 1 * sizeof(float);
                     break;
-                case F2:
+                case VertexAttributes::DrawableAttribute::F2:
                     offset += 2 * sizeof(float);
                     break;
-                case F3:
+                case VertexAttributes::DrawableAttribute::F3:
                     offset += 3 * sizeof(float);
                     break;
-                case F4:
+                case VertexAttributes::DrawableAttribute::F4:
                     offset += 4 * sizeof(float);
                     break;
                 }
@@ -319,27 +325,28 @@ namespace framework
 
     int DrawableCollection::getAttributesSum()
     {
-        int sizeOfStruct = 0;
-        for (int i = 0; i < attributes.size(); i++)
+        int size_of_struct = 0;
+        for (int i = 0; i < attributes->getVertexAttributes().size(); i++)
         {
-            switch (attributes[i])
+            switch (attributes->getVertexAttributes()[i])
             {
-            case F1:
-                sizeOfStruct += 1;
+            case VertexAttributes::DrawableAttribute::F1:
+            case VertexAttributes::DrawableAttribute::I1:
+                size_of_struct += 1;
                 break;
-            case F2:
-                sizeOfStruct += 2;
+            case VertexAttributes::DrawableAttribute::F2:
+                size_of_struct += 2;
                 break;
-            case F3:
-                sizeOfStruct += 3;
+            case VertexAttributes::DrawableAttribute::F3:
+                size_of_struct += 3;
                 break;
-            case F4:
-                sizeOfStruct += 4;
+            case VertexAttributes::DrawableAttribute::F4:
+                size_of_struct += 4;
                 break;
             }
         }
 
-        return sizeOfStruct;
+        return size_of_struct;
     }
 
     uint32_t DrawableCollection::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
@@ -347,7 +354,7 @@ namespace framework
         VkPhysicalDeviceMemoryProperties memProperties;
 
         // Enumerate the memory properties
-        vkGetPhysicalDeviceMemoryProperties(lDevice->getPhysicalDevice()->getDevice(), &memProperties);
+        vkGetPhysicalDeviceMemoryProperties(l_device->getPhysicalDevice()->getDevice(), &memProperties);
 
         for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++)
         {
@@ -360,72 +367,72 @@ namespace framework
         throw std::runtime_error("[DrawableCollection] Unable to find a suitable memory type");
     }
 
-    void DrawableCollection::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer &buffer, VkDeviceMemory &bufferMemory)
+    void DrawableCollection::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer &buffer, VkDeviceMemory &buffer_memory)
     {
         // Create vertex buffer
-        VkBufferCreateInfo bufferInfo{};
+        VkBufferCreateInfo buffer_info{};
 
-        bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-        bufferInfo.size = size;
-        bufferInfo.usage = usage;
-        bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        buffer_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        buffer_info.size = size;
+        buffer_info.usage = usage;
+        buffer_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-        if (vkCreateBuffer(lDevice->getDevice(), &bufferInfo, nullptr, &buffer) != VK_SUCCESS)
+        if (vkCreateBuffer(l_device->getDevice(), &buffer_info, nullptr, &buffer) != VK_SUCCESS)
         {
             throw std::runtime_error("[DrawableCollection] Impossible to create the buffer");
         }
 
         // Enumerate the memory requirements
-        VkMemoryRequirements memRequirements;
-        vkGetBufferMemoryRequirements(lDevice->getDevice(), buffer, &memRequirements);
+        VkMemoryRequirements memory_requirements;
+        vkGetBufferMemoryRequirements(l_device->getDevice(), buffer, &memory_requirements);
 
         // Allocate the memory on GPU
-        VkMemoryAllocateInfo allocInfo{};
+        VkMemoryAllocateInfo alloc_info{};
 
-        allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-        allocInfo.allocationSize = memRequirements.size;
-        allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
+        alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+        alloc_info.allocationSize = memory_requirements.size;
+        alloc_info.memoryTypeIndex = findMemoryType(memory_requirements.memoryTypeBits, properties);
 
-        if (vkAllocateMemory(lDevice->getDevice(), &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS)
+        if (vkAllocateMemory(l_device->getDevice(), &alloc_info, nullptr, &buffer_memory) != VK_SUCCESS)
         {
             throw std::runtime_error("[DrawableCollection] Impossible to allocate the required memory on the GPU");
         }
 
         // Associate the buffer to the memory
-        vkBindBufferMemory(lDevice->getDevice(), buffer, bufferMemory, 0);
+        vkBindBufferMemory(l_device->getDevice(), buffer, buffer_memory, 0);
     }
 
-    void DrawableCollection::transferMemoryToGPU(VkDeviceSize size, VkBuffer src, VkBuffer dst, VkDeviceSize srcOffset, VkDeviceSize dstOffset)
+    void DrawableCollection::transferMemoryToGPU(VkDeviceSize size, VkBuffer src, VkBuffer dst, VkDeviceSize src_offset, VkDeviceSize dst_offset)
     {
         // Reset the fence
-        vkResetFences(lDevice->getDevice(), 1, &copyFence);
+        vkResetFences(l_device->getDevice(), 1, &copy_fence);
 
         // Reset the command buffer
-        vkResetCommandBuffer(commandBuffer->getCommandBuffer(), 0);
+        vkResetCommandBuffer(command_buffer->getCommandBuffer(), 0);
 
         // Record the command buffer to transfer the memory
-        commandBuffer->beginRecording();
+        command_buffer->beginRecording();
 
-        VkBufferCopy copyRegion{};
-        copyRegion.srcOffset = srcOffset;
-        copyRegion.dstOffset = dstOffset;
-        copyRegion.size = size;
+        VkBufferCopy copy_region{};
+        copy_region.srcOffset = src_offset;
+        copy_region.dstOffset = dst_offset;
+        copy_region.size = size;
 
-        vkCmdCopyBuffer(commandBuffer->getCommandBuffer(), src, dst, 1, &copyRegion);
+        vkCmdCopyBuffer(command_buffer->getCommandBuffer(), src, dst, 1, &copy_region);
 
         // End the command buffer recording
-        commandBuffer->stopRecording();
+        command_buffer->stopRecording();
 
         // Submit the command buffer to the graphics queue (supports data movement)
-        VkSubmitInfo submitInfo{};
+        VkSubmitInfo submit_info{};
 
-        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-        submitInfo.commandBufferCount = 1;
-        submitInfo.pCommandBuffers = &commandBuffer->getCommandBuffer();
+        submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        submit_info.commandBufferCount = 1;
+        submit_info.pCommandBuffers = &command_buffer->getCommandBuffer();
 
-        vkQueueSubmit(lDevice->getGraphicsQueue(), 1, &submitInfo, copyFence);
+        vkQueueSubmit(l_device->getGraphicsQueue(), 1, &submit_info, copy_fence);
 
         // Wait for copy to be completed
-        vkWaitForFences(lDevice->getDevice(), 1, &copyFence, VK_TRUE, UINT64_MAX);
+        vkWaitForFences(l_device->getDevice(), 1, &copy_fence, VK_TRUE, UINT64_MAX);
     }
 }

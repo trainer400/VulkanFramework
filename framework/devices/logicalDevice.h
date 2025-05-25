@@ -10,8 +10,8 @@ namespace framework
 {
     struct QueueFamilyIndices
     {
-        std::optional<uint32_t> graphicsFamily;
-        std::optional<uint32_t> presentFamily;
+        std::optional<uint32_t> graphics_family;
+        std::optional<uint32_t> present_family;
     };
 
     class LogicalDevice
@@ -36,15 +36,15 @@ namespace framework
 
         // Getters
         inline const VkDevice &getDevice() { return device; }
-        inline const VkQueue &getGraphicsQueue() { return graphicsQueue; }
-        inline const VkQueue &getPresentQueue() { return presentQueue; }
-        inline const std::unique_ptr<PhysicalDevice> &getPhysicalDevice() { return pDevice; }
+        inline const VkQueue &getGraphicsQueue() { return graphics_queue; }
+        inline const VkQueue &getPresentQueue() { return present_queue; }
+        inline const std::unique_ptr<PhysicalDevice> &getPhysicalDevice() { return p_device; }
 
     private:
-        std::unique_ptr<PhysicalDevice> pDevice;
+        std::unique_ptr<PhysicalDevice> p_device;
 
         VkDevice device = VK_NULL_HANDLE;
-        VkQueue graphicsQueue = VK_NULL_HANDLE;
-        VkQueue presentQueue = VK_NULL_HANDLE;
+        VkQueue graphics_queue = VK_NULL_HANDLE;
+        VkQueue present_queue = VK_NULL_HANDLE;
     };
 }

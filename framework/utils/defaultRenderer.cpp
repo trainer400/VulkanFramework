@@ -391,7 +391,7 @@ namespace framework
         initInfo.Instance = vulkan->getInstance();
         initInfo.PhysicalDevice = lDevice->getPhysicalDevice()->getDevice();
         initInfo.Device = lDevice->getDevice();
-        initInfo.QueueFamily = lDevice->findQueueFamilies(surface->getSurface()).graphicsFamily.value();
+        initInfo.QueueFamily = lDevice->findQueueFamilies(surface->getSurface()).graphics_family.value();
         initInfo.Queue = lDevice->getGraphicsQueue();
         initInfo.PipelineCache = VK_NULL_HANDLE;
         initInfo.DescriptorPool = guiPool;

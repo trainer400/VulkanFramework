@@ -97,7 +97,7 @@ namespace framework
         // Configure family indices
         QueueFamilyIndices indices = l_device->findQueueFamilies(surface);
 
-        uint32_t queue_family_indices[] = {indices.graphicsFamily.value(), indices.presentFamily.value()};
+        uint32_t queue_family_indices[] = {indices.graphics_family.value(), indices.present_family.value()};
         if (queue_family_indices[0] != queue_family_indices[1])
         {
             create_info.imageSharingMode = VK_SHARING_MODE_CONCURRENT;

@@ -20,7 +20,7 @@ namespace framework
 
         pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
         pool_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-        pool_info.queueFamilyIndex = indices.graphicsFamily.value();
+        pool_info.queueFamilyIndex = indices.graphics_family.value();
 
         if (vkCreateCommandPool(l_device->getDevice(), &pool_info, nullptr, &pool) != VK_SUCCESS)
         {

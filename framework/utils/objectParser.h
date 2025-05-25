@@ -30,5 +30,5 @@ namespace framework
      * @warning The texture ordering is the same which is then used by every vertex inside memory, so it is important
      * to keep the initial object ordering.
      */
-    std::vector<std::shared_ptr<DefaultDrawableElement>> parseObjFile(const char *filename, const ObjectParserConfiguration &config, std::vector<std::string> &tex_paths);
+    std::vector<std::shared_ptr<Default3DDrawableElement>> parseObjFile(const char *filename, const ObjectParserConfiguration &config, std::vector<std::string> &tex_paths);
 }

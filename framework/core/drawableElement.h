@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <stdint.h>
+#include <libs/glm/glm.hpp>
 
 #include <core/vertexAttributes.h>
 namespace framework
@@ -52,5 +53,21 @@ namespace framework
 
     private:
         bool is_transparent = false;
+    };
+
+    /**
+     * @class The class represents specifically a 3D object. Being such, it has a data structure which represents only the 3D coordinates
+     * of the corresponding point cloud. The class is specifically created to do math with it, now for regular usage.
+     */
+    class Default3DDrawableElement : public DefaultDrawableElement
+    {
+    public:
+        Default3DDrawableElement(const std::vector<float> &vertices, const std::vector<VertexAttributes::DrawableAttribute> &vertex_attributes,
+                                 const std::vector<uint32_t> &indices, bool transparent);
+
+        const std::vector<glm::vec3> &get3DVertices() { return vertices_3d; }
+
+    private:
+        std::vector<glm::vec3> vertices_3d;
     };
 }

@@ -46,7 +46,7 @@ namespace framework
         std::vector<VkVertexInputAttributeDescription> getAttributeDescriptions();
         const VkBuffer &getVertexBuffer() { return vertex_buffer; }
         const VkBuffer &getIndexBuffer() { return index_buffer; }
-        uint32_t getVerticesNumber() { return vertices.size() / getAttributesSum(); }
+        uint32_t getVerticesNumber() { return vertices.size() / getAttributesFloatNumber(); }
         uint32_t getIndexSize() { return indices.size(); }
         uint32_t getNumberOfInstances() { return number_of_instances; }
         bool isAllocated() { return allocated; }
@@ -63,7 +63,7 @@ namespace framework
         /**
          * @brief Sums the number of floats per vertex
          */
-        int getAttributesSum();
+        int getAttributesFloatNumber();
 
         /**
          * @brief Looks for the memory on the GPU that suits the passed parameters

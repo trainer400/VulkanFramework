@@ -130,8 +130,8 @@ namespace framework
         // Set the allocated flag
         allocated = true;
 
-        // Get the size in bytes of the struct
-        int size_of_struct = getAttributesSum();
+        // Get the size in number of floats of the struct
+        int size_of_struct = getAttributesFloatNumber();
         int vertex_index = 0;
 
         // Allocate the vectors befor creating the Vulkan buffer
@@ -206,8 +206,6 @@ namespace framework
     {
         int vertex_index = 0;
         int element_index = 0;
-        int size_of_attributes = getAttributesSum();
-
         int vSize = 0, eSize = 0;
 
         for (int i = 0; i < elements.size(); i++)
@@ -266,7 +264,7 @@ namespace framework
         VkVertexInputBindingDescription result{};
 
         // Collect the size of the overall struct
-        int size_of_struct = getAttributesSum();
+        int size_of_struct = getAttributesFloatNumber();
 
         // Data is populated only if the buffer has been allocated
         if (allocated)
@@ -288,7 +286,7 @@ namespace framework
         if (allocated)
         {
             uint32_t offset = 0;
-            for (int i = 0; i < attributes->getVertexAttributes().size(); i++)
+            for (int i = 0; i < attributes->size(); i++)
             {
                 VkVertexInputAttributeDescription description{};
 
@@ -298,22 +296,7 @@ namespace framework
                 description.offset = offset;
 
                 // Update the offset
-                switch (attributes->getVertexAttributes()[i])
-                {
-                case VertexAttributes::DrawableAttribute::F1:
-                case VertexAttributes::DrawableAttribute::I1:
-                    offset += 1 * sizeof(float);
-                    break;
-                case VertexAttributes::DrawableAttribute::F2:
-                    offset += 2 * sizeof(float);
-                    break;
-                case VertexAttributes::DrawableAttribute::F3:
-                    offset += 3 * sizeof(float);
-                    break;
-                case VertexAttributes::DrawableAttribute::F4:
-                    offset += 4 * sizeof(float);
-                    break;
-                }
+                offset += attributes->byteSize(attributes->getVertexAttributes()[i]);
 
                 // Add the description at the end
                 descriptions.push_back(description);
@@ -323,30 +306,9 @@ namespace framework
         return descriptions;
     }
 
-    int DrawableCollection::getAttributesSum()
+    int DrawableCollection::getAttributesFloatNumber()
     {
-        int size_of_struct = 0;
-        for (int i = 0; i < attributes->getVertexAttributes().size(); i++)
-        {
-            switch (attributes->getVertexAttributes()[i])
-            {
-            case VertexAttributes::DrawableAttribute::F1:
-            case VertexAttributes::DrawableAttribute::I1:
-                size_of_struct += 1;
-                break;
-            case VertexAttributes::DrawableAttribute::F2:
-                size_of_struct += 2;
-                break;
-            case VertexAttributes::DrawableAttribute::F3:
-                size_of_struct += 3;
-                break;
-            case VertexAttributes::DrawableAttribute::F4:
-                size_of_struct += 4;
-                break;
-            }
-        }
-
-        return size_of_struct;
+        return attributes->byteSize() / sizeof(float);
     }
 
     uint32_t DrawableCollection::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)

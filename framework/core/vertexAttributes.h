@@ -34,6 +34,11 @@ namespace framework
         bool operator==(const std::vector<DrawableAttribute> &other);
         bool operator==(const VertexAttributes &other) { return operator==(other.attributes); }
 
+        // Return the size in bytes of the entire struct
+        unsigned long byteSize();
+        unsigned long byteSize(const DrawableAttribute &a);
+        size_t size() { return attributes.size(); }
+
     private:
         std::vector<DrawableAttribute> attributes;
     };

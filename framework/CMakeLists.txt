@@ -18,7 +18,6 @@ set(FRAMEWORK_CORE
     core/semaphore.cpp
     core/fence.cpp
     core/vertexAttributes.cpp
-    core/drawableElement.cpp
 )
 
 set(FRAMEWORK_DEVICES

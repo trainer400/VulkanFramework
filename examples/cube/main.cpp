@@ -34,7 +34,7 @@ struct GlobalUniformBuffer
 // Uniform buffer
 shared_ptr<UniformBuffer<GlobalUniformBuffer>> gubo;
 
-class Cube : public DrawableElement
+class Cube : public DefaultDrawableElement
 {
 public:
     Cube()

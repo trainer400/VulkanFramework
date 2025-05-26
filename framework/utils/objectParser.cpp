@@ -66,11 +66,11 @@ namespace framework
      * @brief Given the tinyobj shape, the method parses its vertices/indices producing
      * a final drawable element which can be then rendered by the framework.
      */
-    std::shared_ptr<Default3DDrawableElement> getParsedDrawableElement(uint32_t vertex_size,
-                                                                       const tinyobj::shape_t &shape,
-                                                                       const tinyobj::attrib_t &attrib,
-                                                                       const std::vector<tinyobj::material_t> &materials,
-                                                                       const ObjectParserConfiguration &config)
+    std::shared_ptr<DefaultDrawableElement> getParsedDrawableElement(uint32_t vertex_size,
+                                                                     const tinyobj::shape_t &shape,
+                                                                     const tinyobj::attrib_t &attrib,
+                                                                     const std::vector<tinyobj::material_t> &materials,
+                                                                     const ObjectParserConfiguration &config)
     {
         std::vector<float> vertices;
         std::vector<uint32_t> indices;
@@ -156,10 +156,10 @@ namespace framework
         }
 
         // Create the result drawable object
-        return std::make_shared<Default3DDrawableElement>(vertices, vertex_attributes, indices, has_transparency);
+        return std::make_shared<DefaultDrawableElement>(vertices, vertex_attributes, indices, has_transparency);
     }
 
-    std::vector<std::shared_ptr<Default3DDrawableElement>> parseObjFile(const char *filename, const ObjectParserConfiguration &config, std::vector<std::string> &tex_paths)
+    std::vector<std::shared_ptr<DefaultDrawableElement>> parseObjFile(const char *filename, const ObjectParserConfiguration &config, std::vector<std::string> &tex_paths)
     {
         if (filename == nullptr)
             throw runtime_error("[ObjectParser] Null filename");
@@ -177,7 +177,7 @@ namespace framework
         std::string mtl_file_folder = getFolderPath(filename);
 
         // Instantiate the result variables
-        std::vector<std::shared_ptr<Default3DDrawableElement>> result;
+        std::vector<std::shared_ptr<DefaultDrawableElement>> result;
 
         // Load the object
         if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, filename, mtl_file_folder.c_str()))

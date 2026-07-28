@@ -68,7 +68,6 @@ namespace framework
 
         // Create the sync objects
         image_available = std::make_unique<Semaphore>(l_device);
-        render_finished = std::make_unique<Semaphore>(l_device);
         in_flight = std::make_unique<Fence>(l_device, true);
     }
 
@@ -85,6 +84,25 @@ namespace framework
         }
 
         this->swap_chain = std::move(s);
+        createRenderFinishedSemaphores();
+    }
+
+    void DefaultRenderer::createRenderFinishedSemaphores()
+    {
+        if (l_device == nullptr)
+        {
+            throw std::runtime_error("[DefaultRenderer] Logical device must be selected before the swapchain");
+        }
+
+        std::vector<std::unique_ptr<Semaphore>> semaphores;
+        semaphores.reserve(swap_chain->getImages().size());
+
+        for (size_t i = 0; i < swap_chain->getImages().size(); ++i)
+        {
+            semaphores.push_back(std::make_unique<Semaphore>(l_device));
+        }
+
+        render_finished_semaphores = std::move(semaphores);
     }
 
     void DefaultRenderer::selectRenderPass(std::unique_ptr<RenderPass> r)
@@ -248,6 +266,16 @@ namespace framework
             return result;
         }
 
+        if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
+        {
+            return result;
+        }
+
+        if (image_index >= render_finished_semaphores.size())
+        {
+            throw std::runtime_error("[DefaultRenderer] No render-finished semaphore for acquired swapchain image");
+        }
+
         // Reset the fence
         in_flight->reset(1);
 
@@ -298,7 +326,7 @@ namespace framework
         submit_info.commandBufferCount = 1;
         submit_info.pCommandBuffers = &command_buffer->getCommandBuffer();
 
-        VkSemaphore signalSemaphores[] = {render_finished->getSemaphore()};
+        VkSemaphore signalSemaphores[] = {render_finished_semaphores[image_index]->getSemaphore()};
         submit_info.signalSemaphoreCount = 1;
         submit_info.pSignalSemaphores = signalSemaphores;
 
@@ -418,5 +446,6 @@ namespace framework
         render_pass->recreateRenderPass(swap_chain->getExtent(), swap_chain->getFormat());
         frame_buffer_collection->recreateFrameBuffer(swap_chain->getImageViews(), swap_chain->getExtent(),
                                                      render_pass->getDepthTestType(), render_pass->getDepthImageView(), render_pass->getRenderPass());
+        createRenderFinishedSemaphores();
     }
 }

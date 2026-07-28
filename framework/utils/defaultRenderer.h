@@ -107,6 +107,15 @@ namespace framework
         const TimingMeasurement &getTimings() { return timings; }
 
     private:
+        /**
+         * @brief Creates one render-finished semaphore for each swapchain image.
+         *
+         * Presentation is not covered by the graphics submission fence, so a
+         * semaphore waited on by vkQueuePresentKHR cannot safely be reused just
+         * because that fence has signaled.
+         */
+        void createRenderFinishedSemaphores();
+
         // Framework objects
         std::shared_ptr<Vulkan> vulkan;
         std::shared_ptr<LogicalDevice> l_device;
@@ -117,7 +126,7 @@ namespace framework
         std::unique_ptr<FrameBufferCollection> frame_buffer_collection;
         std::unique_ptr<CommandBuffer> command_buffer;
         std::unique_ptr<Semaphore> image_available;
-        std::unique_ptr<Semaphore> render_finished;
+        std::vector<std::unique_ptr<Semaphore>> render_finished_semaphores;
         std::unique_ptr<Fence> in_flight;
 
         // Timing measurements

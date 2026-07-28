@@ -380,6 +380,7 @@ namespace framework
         ImGuiIO &io = ImGui::GetIO();
         io.Fonts->AddFontDefault();
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
         // Setup the glfw window to blindly bind the callbacks
         ImGui_ImplGlfw_InitForVulkan(window, true);

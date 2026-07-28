@@ -379,35 +379,32 @@ namespace framework
         // Configure the InputOutput
         ImGuiIO &io = ImGui::GetIO();
         io.Fonts->AddFontDefault();
-        io.Fonts->Build();
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-
-        // Setup ImGui for the style (TODO make it customizable)
-        ImGui::StyleColorsClassic();
 
         // Setup the glfw window to blindly bind the callbacks
         ImGui_ImplGlfw_InitForVulkan(window, true);
 
-        // Create ad-doc descriptor pool (TODO make it with a descriptor element)
-        std::vector<VkDescriptorPoolSize> poolSizes = {
-            {VK_DESCRIPTOR_TYPE_SAMPLER, 1000},
-            {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000},
-            {VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000},
-            {VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000},
-            {VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000},
-            {VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000},
-            {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000},
-            {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000},
-            {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000},
-            {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000},
-            {VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000}};
+        // Setup ImGui for the style (TODO make it customizable)
+        ImGui::StyleColorsDark();
+
+        VkDescriptorPoolSize poolSizes[] =
+        {
+            { VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, IMGUI_IMPL_VULKAN_MINIMUM_SAMPLED_IMAGE_POOL_SIZE },
+            { VK_DESCRIPTOR_TYPE_SAMPLER, IMGUI_IMPL_VULKAN_MINIMUM_SAMPLER_POOL_SIZE },
+        };
 
         VkDescriptorPoolCreateInfo pool_info{};
         pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
         pool_info.flags |= VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-        pool_info.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
-        pool_info.pPoolSizes = poolSizes.data();
-        pool_info.maxSets = 1;
+        pool_info.maxSets = 0;
+        
+        // Add all the pool sizes needed by im gui
+        for (VkDescriptorPoolSize& poolSize : poolSizes)
+        {
+            pool_info.maxSets += poolSize.descriptorCount;
+        }
+        pool_info.poolSizeCount = static_cast<uint32_t>(IM_COUNTOF(poolSizes));
+        pool_info.pPoolSizes = poolSizes;
 
         if (vkCreateDescriptorPool(l_device->getDevice(), &pool_info, nullptr, &gui_pool) != VK_SUCCESS)
         {
@@ -426,8 +423,9 @@ namespace framework
         init_info.Allocator = nullptr;
         init_info.MinImageCount = l_device->getPhysicalDevice()->getSwapChainSupportDetails().capabilities.minImageCount;
         init_info.ImageCount = swap_chain->getImages().size();
-        init_info.CheckVkResultFn = nullptr;
-        init_info.RenderPass = render_pass->getRenderPass();
+        init_info.PipelineInfoMain.RenderPass = render_pass->getRenderPass();
+        init_info.PipelineInfoMain.Subpass = 0;
+        init_info.PipelineInfoMain.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
 
         ImGui_ImplVulkan_Init(&init_info);
 

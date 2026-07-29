@@ -79,11 +79,11 @@ namespace framework
             updateCallback();
         }
 
-        // Once the window should close, destroy the environment
-        stop();
-
-        // Call the user defined closing callback
+        // Release application resources while the GLFW window is still valid.
         closeCallback();
+
+        // Once application cleanup is complete, destroy the environment.
+        stop();
     }
 
     void Window::setSize(int width, int height)

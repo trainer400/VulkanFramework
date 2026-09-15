@@ -44,6 +44,7 @@ set(IMGUI
     libs/ImGui/imgui_draw.cpp
     libs/ImGui/imgui_widgets.cpp
     libs/ImGui/imgui_tables.cpp
+    libs/ImGui/misc/cpp/imgui_stdlib.cpp
     libs/ImGui/backends/imgui_impl_glfw.cpp
     libs/ImGui/backends/imgui_impl_vulkan.cpp
 )

@@ -96,7 +96,7 @@ namespace framework
         std::set<std::string> required_extension(device_extensions.begin(), device_extensions.end());
 
         // Remove the available extensions from the required ones
-        for (const VkExtensionProperties extension : available_extensions)
+        for (const VkExtensionProperties &extension : available_extensions)
         {
             required_extension.erase(extension.extensionName);
         }

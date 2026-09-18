@@ -127,7 +127,8 @@ namespace framework
 
     void Window::removePosCallback()
     {
-        this->posCallback = [](double xpos, double ypos) {};
+        // Replace the callback with a dummy one
+        this->posCallback = [](double xpos, double ypos) { (void)xpos; (void)ypos; };
     }
 
     void Window::stop()
@@ -138,6 +139,9 @@ namespace framework
 
     void Window::keyEventCallback(int key, int scancode, int action, int mods)
     {
+        (void) scancode;
+        (void) mods;
+
         // Call the registered function if present
         if (keyCallbacks.contains(key))
         {

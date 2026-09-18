@@ -135,7 +135,7 @@ namespace framework
         int vertex_index = 0;
 
         // Allocate the vectors befor creating the Vulkan buffer
-        for (int i = 0; i < elements.size(); i++)
+        for (size_t i = 0; i < elements.size(); i++)
         {
             auto &vertex = elements[i]->getVertices();
             auto &index = elements[i]->getIndices();
@@ -144,7 +144,7 @@ namespace framework
             vertices.insert(vertices.end(), vertex.begin(), vertex.end());
 
             // Manipulate the indices before inserting them into the vector
-            for (int j = 0; j < index.size(); j++)
+            for (size_t j = 0; j < index.size(); j++)
             {
                 indices.push_back(index[j] + vertex_index / size_of_struct);
             }
@@ -206,11 +206,9 @@ namespace framework
     {
         int vertex_index = 0;
         int element_index = 0;
-        int size_of_attributes = getAttributesSum();
-
         int vSize = 0, eSize = 0;
 
-        for (int i = 0; i < elements.size(); i++)
+        for (size_t i = 0; i < elements.size(); i++)
         {
             // Keep track of global vertices and indices sizes
             vSize += elements[i]->getVertices().size();
@@ -222,7 +220,7 @@ namespace framework
                 const std::vector<float> &v = elements[i]->getVertices();
 
                 // Copy the new changed vertices inside the vertex vector
-                for (int j = 0; j < v.size(); j++)
+                for (size_t j = 0; j < v.size(); j++)
                 {
                     vertices[j + vertex_index] = v[j];
                 }
@@ -288,7 +286,7 @@ namespace framework
         if (allocated)
         {
             uint32_t offset = 0;
-            for (int i = 0; i < attributes->getVertexAttributes().size(); i++)
+            for (size_t i = 0; i < attributes->getVertexAttributes().size(); i++)
             {
                 VkVertexInputAttributeDescription description{};
 
@@ -326,7 +324,7 @@ namespace framework
     int DrawableCollection::getAttributesSum()
     {
         int size_of_struct = 0;
-        for (int i = 0; i < attributes->getVertexAttributes().size(); i++)
+        for (size_t i = 0; i < attributes->getVertexAttributes().size(); i++)
         {
             switch (attributes->getVertexAttributes()[i])
             {

@@ -137,7 +137,7 @@ namespace framework
         image_views.resize(images.size());
 
         // For every image create the corresponding image view
-        for (int i = 0; i < images.size(); i++)
+        for (size_t i = 0; i < images.size(); i++)
         {
             VkImageViewCreateInfo create_info{};
 

@@ -4,7 +4,7 @@
 namespace framework
 {
     FPSCamera::FPSCamera(float velocity, int fov_y, float near_plane, float far_plane, FPSCameraKeyBindings bindings)
-        : camera(fov_y, near_plane, far_plane), bindings(bindings),
+        : bindings(bindings), camera(fov_y, near_plane, far_plane),
           forward(velocity), backward(velocity), left(velocity),
           right(velocity), up(velocity), down(velocity)
     {
@@ -53,6 +53,7 @@ namespace framework
 
         window->addKeyCallback(bindings.forward_key, [&, this](int key, int acting)
                                {
+                                    (void) key;
                                     if (acting == GLFW_PRESS)
                                     {
                                         forward.startCounting();
@@ -64,6 +65,7 @@ namespace framework
 
         window->addKeyCallback(bindings.backward_key, [&, this](int key, int acting)
                                {
+                                    (void) key;
                                     if (acting == GLFW_PRESS)
                                     {
                                         backward.startCounting();
@@ -75,6 +77,7 @@ namespace framework
 
         window->addKeyCallback(bindings.left_key, [&, this](int key, int acting)
                                {
+                                    (void) key;
                                     if (acting == GLFW_PRESS)
                                     {
                                         left.startCounting();
@@ -86,6 +89,7 @@ namespace framework
 
         window->addKeyCallback(bindings.right_key, [&, this](int key, int acting)
                                {
+                                    (void) key;
                                     if (acting == GLFW_PRESS)
                                     {
                                         right.startCounting();
@@ -97,6 +101,7 @@ namespace framework
 
         window->addKeyCallback(bindings.down_key, [&, this](int key, int acting)
                                {
+                                    (void) key;
                                     if (acting == GLFW_PRESS)
                                     {
                                         down.startCounting();
@@ -108,6 +113,7 @@ namespace framework
 
         window->addKeyCallback(bindings.up_key, [&, this](int key, int acting)
                                {
+                                    (void) key;
                                     if (acting == GLFW_PRESS)
                                     {
                                         up.startCounting();

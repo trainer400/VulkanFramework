@@ -191,7 +191,7 @@ namespace framework
         sampler_info.minLod = 0.0f;
         sampler_info.maxLod = 0.0f;
 
-        if (vkCreateSampler(l_device->getDevice(), &sampler_info, nullptr, &texture_sampler) != VK_SUCCESS)
+        if (vkCreateSampler(l_device->getDevice(), &sampler_info, nullptr, &sampler) != VK_SUCCESS)
         {
             throw std::runtime_error("[Texture] Impossible to crete texture sampler");
         }
@@ -262,6 +262,8 @@ namespace framework
 
     void Texture::transitionImageLayout(VkImage image, VkFormat format, VkImageLayout old_layout, VkImageLayout new_layout)
     {
+        (void) format;
+        
         // Reset the command buffer for new sequence of commands
         vkResetCommandBuffer(command_buffer->getCommandBuffer(), 0);
 

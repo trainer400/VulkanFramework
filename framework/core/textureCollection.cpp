@@ -286,6 +286,8 @@ namespace framework
 
     void TextureCollection::transitionImageLayout(VkImage image, VkFormat format, VkImageLayout old_layout, VkImageLayout new_layout)
     {
+        (void) format;
+        
         // Reset the command buffer for new sequence of commands
         vkResetCommandBuffer(command_buffer->getCommandBuffer(), 0);
 

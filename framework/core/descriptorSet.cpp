@@ -24,7 +24,7 @@ namespace framework
         std::vector<VkDescriptorSetLayoutBinding> bindings{elements.size()};
         std::vector<VkWriteDescriptorSet> descriptorWrites{elements.size()};
 
-        for (int i = 0; i < elements.size(); i++)
+        for (size_t i = 0; i < elements.size(); i++)
         {
             pool_sizes[i] = elements[i]->getPoolSize();
             bindings[i] = elements[i]->getDescriptorSetLayoutBinding();
@@ -69,7 +69,7 @@ namespace framework
         }
 
         // Update the descriptor set inside the writes structs
-        for (int i = 0; i < descriptorWrites.size(); i++)
+        for (size_t i = 0; i < descriptorWrites.size(); i++)
         {
             descriptorWrites[i].dstSet = descriptor_set;
         }

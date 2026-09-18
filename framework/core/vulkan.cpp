@@ -30,13 +30,13 @@ namespace framework
         char **extensions;
         extensions = new char *[glfw_extension_count + added_extensions.size()];
 
-        for (int i = 0; i < glfw_extension_count; i++)
+        for (uint32_t i = 0; i < glfw_extension_count; i++)
         {
             extensions[i] = new char[strlen(glfw_extensions[i]) + 1];
             strcpy(extensions[i], glfw_extensions[i]);
         }
 
-        for (int i = 0; i < added_extensions.size(); i++)
+        for (size_t i = 0; i < added_extensions.size(); i++)
         {
             extensions[glfw_extension_count + i] = new char[strlen(added_extensions[i]) + 1];
             strcpy(extensions[glfw_extension_count + i], added_extensions[i]);
@@ -74,7 +74,7 @@ namespace framework
             for (const char *layer_name : validation_layers)
             {
                 layer_found = false;
-                for (const VkLayerProperties properties : availableLayers)
+                for (const VkLayerProperties &properties : availableLayers)
                 {
                     if (strcmp(layer_name, properties.layerName) == 0)
                     {
@@ -104,11 +104,11 @@ namespace framework
         }
 
         // After instance creation free the extensions
-        for (int i = 0; i < glfw_extension_count + added_extensions.size(); i++)
+        for (size_t i = 0; i < glfw_extension_count + added_extensions.size(); i++)
         {
             delete (extensions[i]);
         }
-        delete extensions;
+        delete[] extensions;
     }
 
     Vulkan::~Vulkan()

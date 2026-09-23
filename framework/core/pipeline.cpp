@@ -103,12 +103,12 @@ namespace framework
         rasterizer.depthBiasSlopeFactor = 0;
         rasterizer.lineWidth = 1.0f;
 
-        // Multi-sampling (TODO evaluate to make this configurable)
+        // Multi-sampling
         VkPipelineMultisampleStateCreateInfo multisampling{};
 
         multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
         multisampling.sampleShadingEnable = VK_FALSE;
-        multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+        multisampling.rasterizationSamples = config.sample_count;
         multisampling.minSampleShading = 1.0;
         multisampling.pSampleMask = nullptr;
         multisampling.alphaToCoverageEnable = VK_FALSE;

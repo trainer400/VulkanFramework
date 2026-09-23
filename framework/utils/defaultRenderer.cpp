@@ -426,7 +426,7 @@ namespace framework
         init_info.ImageCount = swap_chain->getImages().size();
         init_info.PipelineInfoMain.RenderPass = render_pass->getRenderPass();
         init_info.PipelineInfoMain.Subpass = 0;
-        init_info.PipelineInfoMain.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+        init_info.PipelineInfoMain.MSAASamples = render_pass->getSampleCount();
 
         ImGui_ImplVulkan_Init(&init_info);
 
@@ -444,7 +444,8 @@ namespace framework
         swap_chain->recreateSwapChain(window, surface->getSurface());
         render_pass->recreateRenderPass(swap_chain->getExtent(), swap_chain->getFormat());
         frame_buffer_collection->recreateFrameBuffer(swap_chain->getImageViews(), swap_chain->getExtent(),
-                                                     render_pass->getDepthTestType(), render_pass->getDepthImageView(), render_pass->getRenderPass());
+                                                     render_pass->getDepthTestType(), render_pass->getDepthImageView(), render_pass->getRenderPass(),
+                                                     render_pass->getColorImageView());
         createRenderFinishedSemaphores();
     }
 }

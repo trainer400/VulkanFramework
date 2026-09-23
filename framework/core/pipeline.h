@@ -18,6 +18,7 @@ namespace framework
         VkPolygonMode polygon_mode = VK_POLYGON_MODE_FILL;
         VkCullModeFlagBits cull_mode = VK_CULL_MODE_BACK_BIT;
         VkFrontFace front_face = VK_FRONT_FACE_CLOCKWISE;
+        VkSampleCountFlagBits sample_count = VK_SAMPLE_COUNT_1_BIT;
     };
 
     class Pipeline

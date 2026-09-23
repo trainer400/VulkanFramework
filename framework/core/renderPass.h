@@ -15,10 +15,17 @@ namespace framework
         DEPTH_16_STENCIL_8 = VK_FORMAT_D24_UNORM_S8_UINT
     };
 
+    struct RenderPassConfiguration
+    {
+        DepthTestType depth_test_type = DepthTestType::NONE;
+        VkSampleCountFlagBits sample_count = VK_SAMPLE_COUNT_1_BIT;
+    };
+
     class RenderPass
     {
     public:
         RenderPass(const std::shared_ptr<LogicalDevice> &l_device, const VkExtent2D &extent, const VkSurfaceFormatKHR &format, DepthTestType depth = DepthTestType::NONE);
+        RenderPass(const std::shared_ptr<LogicalDevice> &l_device, const VkExtent2D &extent, const VkSurfaceFormatKHR &format, const RenderPassConfiguration &config);
         ~RenderPass();
 
         /**
@@ -33,7 +40,9 @@ namespace framework
         // Getters
         const VkRenderPass &getRenderPass() { return render_pass; }
         const VkImageView &getDepthImageView() { return depth_image_view; }
-        const DepthTestType &getDepthTestType() { return depth; }
+        const VkImageView &getColorImageView() { return color_image_view; }
+        const DepthTestType &getDepthTestType() { return config.depth_test_type; }
+        const VkSampleCountFlagBits &getSampleCount() { return config.sample_count; }
 
     private:
         /**
@@ -52,6 +61,11 @@ namespace framework
         void checkFormat(VkFormat candidate, VkImageTiling tiling, VkFormatFeatureFlags features);
 
         /**
+         * @brief Checks that the image format supports the requested sample count
+         */
+        void checkSampleCount(VkFormat format, VkImageUsageFlags usage);
+
+        /**
          * @brief Allocates the image inside the memory
          */
         void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage &image, VkDeviceMemory &image_memory);
@@ -62,14 +76,19 @@ namespace framework
         uint32_t findMemoryType(uint32_t type_filter, VkMemoryPropertyFlags flags);
 
         /**
-         * @brief Creates the corresponding image view for the created depth image
+         * @brief Creates the corresponding image view for the created image
          */
         void createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspect_flags, VkImageView &view);
 
         std::shared_ptr<LogicalDevice> l_device;
-        DepthTestType depth;
+        RenderPassConfiguration config;
 
         VkRenderPass render_pass = VK_NULL_HANDLE;
+
+        // Multisampled color buffer
+        VkImage color_image = VK_NULL_HANDLE;
+        VkDeviceMemory color_image_memory = VK_NULL_HANDLE;
+        VkImageView color_image_view = VK_NULL_HANDLE;
 
         // Depth buffer
         VkImage depth_image = VK_NULL_HANDLE;

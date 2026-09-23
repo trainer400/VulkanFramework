@@ -129,6 +129,7 @@ void createGraphicsObjects()
 
     // Create the pipeline
     PipelineConfiguration config{};
+    config.sample_count = render_pass->getSampleCount();
     cube_pipeline = make_shared<Pipeline>(l_device, move(cube_collection), render_pass->getDepthTestType(), render_pass->getRenderPass(), config);
 
     // Add the pipeline to the renderer
@@ -191,9 +192,13 @@ int main()
 
     // Create frame buffer collection
     swap_chain = make_unique<SwapChain>(l_device, window, surface->getSurface(), SwapChainConfiguration{});
-    render_pass = make_unique<RenderPass>(l_device, swap_chain->getExtent(), swap_chain->getFormat(), DepthTestType::DEPTH_32);
+    RenderPassConfiguration render_pass_config{};
+    render_pass_config.depth_test_type = DepthTestType::DEPTH_32;
+    render_pass_config.sample_count = VK_SAMPLE_COUNT_4_BIT;
+    render_pass = make_unique<RenderPass>(l_device, swap_chain->getExtent(), swap_chain->getFormat(), render_pass_config);
     frame_buffer_collection = make_unique<FrameBufferCollection>(l_device, swap_chain->getImageViews(), swap_chain->getExtent(),
-                                                                 render_pass->getDepthTestType(), render_pass->getDepthImageView(), render_pass->getRenderPass());
+                                                                 render_pass->getDepthTestType(), render_pass->getDepthImageView(), render_pass->getRenderPass(),
+                                                                 render_pass->getColorImageView());
 
     // Create the renderer object
     renderer = make_unique<DefaultRenderer>();

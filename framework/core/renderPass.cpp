@@ -4,6 +4,11 @@
 namespace framework
 {
     RenderPass::RenderPass(const std::shared_ptr<LogicalDevice> &l_device, const VkExtent2D &extent, const VkSurfaceFormatKHR &format, DepthTestType depth)
+        : RenderPass(l_device, extent, format, RenderPassConfiguration{depth, VK_SAMPLE_COUNT_1_BIT})
+    {
+    }
+
+    RenderPass::RenderPass(const std::shared_ptr<LogicalDevice> &l_device, const VkExtent2D &extent, const VkSurfaceFormatKHR &format, const RenderPassConfiguration &config)
     {
         if (l_device == nullptr)
         {
@@ -11,7 +16,7 @@ namespace framework
         }
 
         this->l_device = l_device;
-        this->depth = depth;
+        this->config = config;
 
         createRenderPass(extent, format);
     }
@@ -23,14 +28,27 @@ namespace framework
 
     void RenderPass::createRenderPass(const VkExtent2D &extent, const VkSurfaceFormatKHR &format)
     {
+        if (config.sample_count != VK_SAMPLE_COUNT_1_BIT)
+        {
+            // Check that the requested multisampling count is supported
+            checkSampleCount(format.format, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
+
+            // Create the color image
+            createImage(extent.width, extent.height,
+                        format.format, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+                        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, color_image, color_image_memory);
+
+            createImageView(color_image, format.format, VK_IMAGE_ASPECT_COLOR_BIT, color_image_view);
+        }
+
         // Structs to be used in case of a depth buffer active
         VkAttachmentDescription depth_attachment{};
         VkAttachmentReference depth_attachment_ref{};
 
         // Depth buffer
-        if (depth != NONE)
+        if (config.depth_test_type != NONE)
         {
-            VkFormat depthFormat = static_cast<VkFormat>(depth);
+            VkFormat depthFormat = static_cast<VkFormat>(config.depth_test_type);
 
             // Check that the requested depth buffering is supported
             checkFormat(depthFormat,
@@ -46,7 +64,7 @@ namespace framework
 
             // Populate the attachment
             depth_attachment.format = depthFormat;
-            depth_attachment.samples = VK_SAMPLE_COUNT_1_BIT;
+            depth_attachment.samples = config.sample_count;
             depth_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
             depth_attachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
             depth_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -58,19 +76,19 @@ namespace framework
         VkAttachmentDescription color_attachment{};
 
         color_attachment.format = format.format;
-        color_attachment.samples = VK_SAMPLE_COUNT_1_BIT;
+        color_attachment.samples = config.sample_count;
 
         // The frame buffer is going to be cleared before a drawing operation
         color_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        color_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        color_attachment.storeOp = config.sample_count != VK_SAMPLE_COUNT_1_BIT ? VK_ATTACHMENT_STORE_OP_DONT_CARE : VK_ATTACHMENT_STORE_OP_STORE;
 
         // Don't care for stencils
         color_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         color_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 
-        // The images are presented for a swap chain
+        // Multisampled color is resolved into the swap chain image
         color_attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        color_attachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+        color_attachment.finalLayout = config.sample_count != VK_SAMPLE_COUNT_1_BIT ? VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
         // Setup subpass
         VkAttachmentReference color_attachment_ref{};
@@ -83,7 +101,7 @@ namespace framework
         subpass.colorAttachmentCount = 1;
         subpass.pColorAttachments = &color_attachment_ref;
 
-        if (depth != NONE)
+        if (config.depth_test_type != NONE)
         {
             depth_attachment_ref.attachment = 1;
             depth_attachment_ref.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
@@ -100,7 +118,7 @@ namespace framework
         dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
         dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
-        if (depth != NONE)
+        if (config.depth_test_type != NONE)
         {
             // Adjust the subpass dependency
             dependency.srcStageMask |= VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
@@ -112,9 +130,24 @@ namespace framework
         std::vector<VkAttachmentDescription> attachments;
         attachments.push_back(color_attachment);
 
-        if (depth != NONE)
+        if (config.depth_test_type != NONE)
         {
             attachments.push_back(depth_attachment);
+        }
+
+        VkAttachmentReference resolve_attachment_ref{};
+        if (config.sample_count != VK_SAMPLE_COUNT_1_BIT)
+        {
+            VkAttachmentDescription resolve_attachment = color_attachment;
+            resolve_attachment.samples = VK_SAMPLE_COUNT_1_BIT;
+            resolve_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            resolve_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+            resolve_attachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+            resolve_attachment_ref.attachment = static_cast<uint32_t>(attachments.size());
+            resolve_attachment_ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            subpass.pResolveAttachments = &resolve_attachment_ref;
+            attachments.push_back(resolve_attachment);
         }
 
         // Create the renderpass
@@ -135,28 +168,50 @@ namespace framework
 
     void RenderPass::cleanup()
     {
+        if (color_image_view != VK_NULL_HANDLE)
+        {
+            vkDestroyImageView(l_device->getDevice(), color_image_view, nullptr);
+            color_image_view = VK_NULL_HANDLE;
+        }
+
+        if (color_image != VK_NULL_HANDLE)
+        {
+            vkDestroyImage(l_device->getDevice(), color_image, nullptr);
+            color_image = VK_NULL_HANDLE;
+        }
+
+        if (color_image_memory != VK_NULL_HANDLE)
+        {
+            vkFreeMemory(l_device->getDevice(), color_image_memory, nullptr);
+            color_image_memory = VK_NULL_HANDLE;
+        }
+
         // Destroy the depth buffer
-        if (depth != NONE)
+        if (config.depth_test_type != NONE)
         {
             if (depth_image_view != VK_NULL_HANDLE)
             {
                 vkDestroyImageView(l_device->getDevice(), depth_image_view, nullptr);
+                depth_image_view = VK_NULL_HANDLE;
             }
 
             if (depth_image != VK_NULL_HANDLE)
             {
                 vkDestroyImage(l_device->getDevice(), depth_image, nullptr);
+                depth_image = VK_NULL_HANDLE;
             }
 
             if (depth_image_memory != VK_NULL_HANDLE)
             {
                 vkFreeMemory(l_device->getDevice(), depth_image_memory, nullptr);
+                depth_image_memory = VK_NULL_HANDLE;
             }
         }
 
         if (render_pass != VK_NULL_HANDLE)
         {
             vkDestroyRenderPass(l_device->getDevice(), render_pass, nullptr);
+            render_pass = VK_NULL_HANDLE;
         }
     }
 
@@ -183,7 +238,10 @@ namespace framework
         // Add the user specified clear color
         std::vector<VkClearValue> clear_values;
         clear_values.push_back(clear_color);
-        clear_values.push_back({1.0f, 0.0f}); // Depth and stencil
+        if (config.depth_test_type != NONE)
+        {
+            clear_values.push_back({1.0f, 0.0f}); // Depth and stencil
+        }
 
         render_pass_info.clearValueCount = static_cast<uint32_t>(clear_values.size());
         render_pass_info.pClearValues = clear_values.data();
@@ -218,6 +276,17 @@ namespace framework
         throw std::runtime_error("[RenderPass] Failed to find supported format");
     }
 
+    void RenderPass::checkSampleCount(VkFormat format, VkImageUsageFlags usage)
+    {
+        VkImageFormatProperties properties;
+        if (vkGetPhysicalDeviceImageFormatProperties(l_device->getPhysicalDevice()->getDevice(), format,
+                                                    VK_IMAGE_TYPE_2D, VK_IMAGE_TILING_OPTIMAL, usage, 0, &properties) != VK_SUCCESS ||
+            (properties.sampleCounts & config.sample_count) == 0)
+        {
+            throw std::runtime_error("[RenderPass] Unsupported sample count for image format");
+        }
+    }
+
     void RenderPass::createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage &image, VkDeviceMemory &image_memory)
     {
         VkImageCreateInfo image_info{};
@@ -232,7 +301,7 @@ namespace framework
         image_info.tiling = tiling;
         image_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         image_info.usage = usage;
-        image_info.samples = VK_SAMPLE_COUNT_1_BIT;
+        image_info.samples = config.sample_count;
         image_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
         if (vkCreateImage(l_device->getDevice(), &image_info, nullptr, &image) != VK_SUCCESS)

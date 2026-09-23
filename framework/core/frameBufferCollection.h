@@ -14,14 +14,16 @@ namespace framework
     public:
         FrameBufferCollection(const std::shared_ptr<LogicalDevice> &l_device,
                               const std::vector<VkImageView> &image_views, const VkExtent2D &extent,
-                              const DepthTestType &depth_test_type, const VkImageView &depth_image_view, const VkRenderPass &render_pass);
+                              const DepthTestType &depth_test_type, const VkImageView &depth_image_view, const VkRenderPass &render_pass,
+                              const VkImageView &color_image_view = VK_NULL_HANDLE);
         ~FrameBufferCollection();
 
         /**
          * @brief Recreates the frame buffer (usually called after window resize)
          */
         void recreateFrameBuffer(const std::vector<VkImageView> &image_views, const VkExtent2D &extent,
-                                 const DepthTestType &depth_test_type, const VkImageView &depth_image_view, const VkRenderPass &render_pass);
+                                 const DepthTestType &depth_test_type, const VkImageView &depth_image_view, const VkRenderPass &render_pass,
+                                 const VkImageView &color_image_view = VK_NULL_HANDLE);
 
         // Getter
         const std::vector<VkFramebuffer> &getFrameBuffers() { return frame_buffers; }
@@ -32,7 +34,8 @@ namespace framework
          * frame buffer re-creation method.
          */
         void createFrameBuffer(const std::vector<VkImageView> &image_views, const VkExtent2D &extent,
-                               const DepthTestType &depth_test_type, const VkImageView &depth_image_view, const VkRenderPass &render_pass);
+                               const DepthTestType &depth_test_type, const VkImageView &depth_image_view, const VkRenderPass &render_pass,
+                               const VkImageView &color_image_view);
 
         /**
          * @brief Cleans everything and removes the frame buffers

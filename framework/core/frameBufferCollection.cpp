@@ -5,7 +5,8 @@ namespace framework
 {
     FrameBufferCollection::FrameBufferCollection(const std::shared_ptr<LogicalDevice> &l_device,
                                                  const std::vector<VkImageView> &image_views, const VkExtent2D &extent,
-                                                 const DepthTestType &dept_test_type, const VkImageView &depth_image_view, const VkRenderPass &render_pass)
+                                                 const DepthTestType &dept_test_type, const VkImageView &depth_image_view, const VkRenderPass &render_pass,
+                                                 const VkImageView &color_image_view)
     {
         if (l_device == nullptr)
         {
@@ -19,7 +20,7 @@ namespace framework
 
         this->l_device = l_device;
 
-        createFrameBuffer(image_views, extent, dept_test_type, depth_image_view, render_pass);
+        createFrameBuffer(image_views, extent, dept_test_type, depth_image_view, render_pass, color_image_view);
     }
 
     FrameBufferCollection::~FrameBufferCollection()
@@ -28,7 +29,8 @@ namespace framework
     }
 
     void FrameBufferCollection::createFrameBuffer(const std::vector<VkImageView> &image_views, const VkExtent2D &extent,
-                                                  const DepthTestType &dept_test_type, const VkImageView &depth_image_view, const VkRenderPass &render_pass)
+                                                  const DepthTestType &dept_test_type, const VkImageView &depth_image_view, const VkRenderPass &render_pass,
+                                                  const VkImageView &color_image_view)
     {
         // Get the images pointer
         size_t images_size = image_views.size();
@@ -39,12 +41,17 @@ namespace framework
         for (size_t i = 0; i < images_size; i++)
         {
             std::vector<VkImageView> attachments;
-            attachments.push_back(image_views[i]);
+            attachments.push_back(color_image_view != VK_NULL_HANDLE ? color_image_view : image_views[i]);
 
             // Add the depth buffer if necessary
             if (dept_test_type != NONE && depth_image_view != VK_NULL_HANDLE)
             {
                 attachments.push_back(depth_image_view);
+            }
+
+            if (color_image_view != VK_NULL_HANDLE)
+            {
+                attachments.push_back(image_views[i]);
             }
 
             VkFramebufferCreateInfo create_info{};
@@ -65,13 +72,14 @@ namespace framework
     }
 
     void FrameBufferCollection::recreateFrameBuffer(const std::vector<VkImageView> &image_views, const VkExtent2D &extent,
-                                                    const DepthTestType &dept_test_type, const VkImageView &depth_image_view, const VkRenderPass &render_pass)
+                                                    const DepthTestType &dept_test_type, const VkImageView &depth_image_view, const VkRenderPass &render_pass,
+                                                    const VkImageView &color_image_view)
     {
         // Clean the previous
         cleanup();
 
         // Create the new frame buffer
-        createFrameBuffer(image_views, extent, dept_test_type, depth_image_view, render_pass);
+        createFrameBuffer(image_views, extent, dept_test_type, depth_image_view, render_pass, color_image_view);
     }
 
     void FrameBufferCollection::cleanup()
